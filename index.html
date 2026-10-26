@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Del Autodiagnóstico a la Evidencia</title>
+<meta name="description" content="Recorrido interactivo por los resultados de línea base (datos grupales) de un programa psicoeducativo cognitivo-conductual con deportistas juveniles de la EIFD. Semillero Mathesis – TdeA.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#efede7; --ink:#1c2230; --ink-2:#4a5263; --ink-3:#717a8c;
+  --line:#d9d6cd; --grid:#c9c5ba;
+  --vol:#2a78d6; --fut:#eb6834; --team:var(--vol);
+  --risk:rgba(232,190,40,.22); --risk-ink:#8a6a00;
+  --clin:rgba(236,120,96,.22); --clin-ink:#a2412b;
+  --ok:#2f7d5b;
+  --shadow:0 1px 2px rgba(20,24,35,.06),0 4px 16px rgba(20,24,35,.06);
+  --radius:14px;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11141b; --surface:#191d26; --surface-2:#222734; --ink:#eceef3; --ink-2:#b7bdca; --ink-3:#8b93a5;
+    --line:#2e3442; --grid:#3d4454;
+    --vol:#4b8fe2; --fut:#f07a4a;
+    --risk:rgba(232,190,40,.16); --risk-ink:#e2c25a;
+    --clin:rgba(236,120,96,.18); --clin-ink:#f29a84;
+    --ok:#5cc196;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11141b; --surface:#191d26; --surface-2:#222734; --ink:#eceef3; --ink-2:#b7bdca; --ink-3:#8b93a5;
+  --line:#2e3442; --grid:#3d4454;
+  --vol:#4b8fe2; --fut:#f07a4a;
+  --risk:rgba(232,190,40,.16); --risk-ink:#e2c25a;
+  --clin:rgba(236,120,96,.18); --clin-ink:#f29a84;
+  --ok:#5cc196;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+body.fut{--team:var(--fut)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);overflow-x:hidden;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+h1,h2,h3{font-family:var(--serif);line-height:1.2;margin:0}
+p{margin:0 0 .75em}
+button{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+
+/* ---------- Encabezado ---------- */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{padding-top:10px;padding-bottom:10px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kicker{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.theme-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;
+  display:grid;place-items:center;cursor:pointer;flex:none}
+.theme-btn svg{width:17px;height:17px}
+.stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:9px}
+.stepper button{border:0;padding:0;min-width:0;background:none;cursor:pointer;text-align:left}
+.stepper .bar{display:block;height:5px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.stepper .bar::after{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+.stepper button.done .bar::after,.stepper button.on .bar::after{transform:scaleX(1)}
+.stepper .lbl{display:block;font-size:11.5px;color:var(--ink-3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stepper button.on .lbl{color:var(--ink);font-weight:700}
+
+.teamsel{display:none;margin-top:10px}
+body.show-team .teamsel{display:block}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:999px;padding:4px;position:relative;border:1px solid var(--line)}
+.seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;
+  background:var(--vol);transition:transform .35s cubic-bezier(.4,0,.2,1),background .35s}
+body.fut .seg::before{transform:translateX(100%);background:var(--fut)}
+.seg button{position:relative;z-index:1;border:0;background:none;padding:8px 6px;font-weight:700;font-size:15.5px;cursor:pointer;border-radius:999px;color:var(--ink-2);transition:color .3s}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg small{font-weight:400;opacity:.9;font-size:12.5px}
+
+/* ---------- Pasos ---------- */
+main{min-height:60vh;touch-action:pan-y}
+.step{display:none;padding:22px 0 8px}
+.step.on{display:block;animation:enter .42s cubic-bezier(.2,.7,.2,1)}
+.step.on.back{animation-name:enterBack}
+@keyframes enter{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes enterBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.step h2{font-size:clamp(25px,6.6vw,32px);margin-bottom:14px}
+.lead{font-size:17px;color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin:14px 0}
+.card h3{font-size:19px;margin-bottom:8px}
+.muted{color:var(--ink-3)}
+.small{font-size:15px}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:var(--surface-2);vertical-align:middle}
+.tag.h{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid2{display:grid;gap:14px}
+@media (min-width:600px){.grid2{grid-template-columns:1fr 1fr}.grid2>.card{margin:0}}
+
+/* Portada / título */
+.title-block{padding:4px 0 6px}
+.title-block h1{font-size:clamp(24px,6.4vw,34px);letter-spacing:-.01em}
+.title-block h1 span{display:block;font-size:.66em;font-weight:600;color:var(--ink-2);margin-top:8px;line-height:1.3}
+.authors{font-size:15px;color:var(--ink-2);margin-top:12px}
+.question{border-left:4px solid var(--ink);padding:4px 0 4px 14px;font-family:var(--serif);font-size:18.5px;line-height:1.45;margin:18px 0}
+.design-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* Línea de tiempo */
+.timeline{list-style:none;margin:6px 0 0;padding:0;position:relative}
+.timeline li{position:relative;padding:0 0 18px 34px}
+.timeline li::before{content:"";position:absolute;left:10px;top:20px;bottom:-2px;width:2px;background:var(--ink)}
+.timeline li:last-child::before{display:none}
+.timeline li.pend::before{background:none}
+.timeline li:nth-last-child(2)::before{background:repeating-linear-gradient(var(--ink) 0 4px,transparent 4px 8px)}
+.timeline .dot{position:absolute;left:2px;top:3px;width:18px;height:18px;border-radius:50%;background:var(--ink);border:3px solid var(--surface);box-shadow:0 0 0 2px var(--ink)}
+.timeline li.pend .dot{background:var(--surface);border:2px dashed var(--ink);box-shadow:none}
+.timeline li.span .dot{background:linear-gradient(90deg,var(--vol) 50%,var(--fut) 50%)}
+.timeline b{display:block;font-size:16.5px}
+.timeline .when{font-size:14.5px;color:var(--ink-3)}
+
+/* Escala T */
+.tscale{margin:12px 0 4px}
+.tscale .track{position:relative;height:28px;border-radius:6px;overflow:hidden;display:flex;border:1px solid var(--line)}
+.tscale .track div{display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700}
+.z-n{background:var(--surface-2);color:var(--ink-2)}
+.z-r{background:var(--risk);color:var(--risk-ink)}
+.z-c{background:var(--clin);color:var(--clin-ink)}
+.tscale .ticks{position:relative;height:18px;font-size:12px;color:var(--ink-3)}
+.tscale .ticks span{position:absolute;transform:translateX(-50%)}
+
+/* Muestra con puntos */
+.sample{margin-top:12px}
+.sample .row{margin-bottom:12px}
+.sample .lab{display:flex;justify-content:space-between;gap:8px;font-size:15px;margin-bottom:5px}
+.dots{display:flex;flex-wrap:wrap;gap:4px}
+.dots i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--grid);display:block}
+.dots i.f{background:var(--c);border-color:var(--c)}
+.dots i.x{background:transparent;border:1.5px dashed var(--c)}
+.diag-list{margin:6px 0 0;padding:0;list-style:none}
+.diag-list li{padding:7px 0;border-top:1px solid var(--line);font-size:15.5px}
+.diag-list li:first-child{border-top:0}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:6px;vertical-align:baseline}
+.team-name{font-weight:700}
+
+/* Radar */
+.radar-card{padding:10px 8px 14px}
+.radar-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:4px 8px 0}
+.radar-head .n{font-size:15px;color:var(--ink-2)}
+.radar-head .n b{color:var(--team);transition:color .4s}
+svg.radar{display:block;width:100%;max-width:440px;margin:0 auto;height:auto;overflow:visible;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.radar .ring{fill:none;stroke:var(--grid);stroke-width:1}
+.radar .ring.m{stroke:var(--ink-2);stroke-dasharray:4 4;stroke-width:1.4}
+.radar .ring.r60{stroke:var(--risk-ink);stroke-width:1.1;opacity:.75}
+.radar .ring.r70{stroke:var(--clin-ink);stroke-width:1.1;opacity:.75}
+.radar .band-r{fill:var(--risk)}
+.radar .band-c{fill:var(--clin)}
+.radar .spoke{stroke:var(--grid);stroke-width:1}
+.radar .spoke.sel{stroke:var(--ink);stroke-width:1.6}
+.radar .ringlab{font-size:10.5px;font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.radar .poly{fill:var(--team);fill-opacity:.2;stroke:var(--team);stroke-width:2.4;stroke-linejoin:round;transition:fill .4s,stroke .4s}
+.radar .pend{fill:none;stroke:var(--team);stroke-opacity:.4;stroke-width:2.2;stroke-dasharray:6 5;stroke-linejoin:round;animation:march 1.2s linear infinite}
+@keyframes march{to{stroke-dashoffset:-22}}
+.radar .vtx{fill:var(--surface);stroke:var(--team);stroke-width:2.2;transition:stroke .4s}
+.radar .vtx.sel{fill:var(--team)}
+.radar .ax{cursor:pointer;outline:none}
+.radar .ax .abbr{font-size:15px;font-weight:700;fill:var(--ink)}
+.radar .ax .val{font-size:13px;font-weight:700;fill:var(--team);transition:fill .4s}
+.radar .ax.sel .abbr{text-decoration:underline;text-underline-offset:3px}
+.radar .ax:focus-visible .abbr{fill:var(--team)}
+.radar .pill rect{fill:var(--ink)}
+.radar .pill text{fill:var(--bg);font-size:10.5px;font-weight:700}
+.radar .hit{fill:transparent}
+#radar2 .spoke.sel{stroke:var(--grid);stroke-width:1}
+.radar .harrow{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.radar .pendlab{font-size:12px;font-weight:700;fill:var(--ink-2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--ink-2);padding:6px 8px 0;justify-content:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend span span{display:inline}
+.legend .sw{width:16px;height:10px;border-radius:2px;display:inline-block}
+.legend .ln{width:18px;height:0;border-top:2px dashed var(--ink-2);display:inline-block}
+.legend .ln.t{border-top:2.4px solid var(--team)}
+.legend .ln.p{border-top:2.2px dashed var(--team);opacity:.6}
+
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px}
+@media (min-width:600px){.chips{grid-template-columns:repeat(4,1fr)}}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 9px;text-align:left;font-size:14.5px;line-height:1.25;cursor:pointer;display:flex;gap:6px;align-items:center;min-height:44px}
+.chips button b{font-size:13px;min-width:30px}
+.chips button[aria-pressed="true"]{border-color:var(--team);box-shadow:inset 0 0 0 1.5px var(--team);background:color-mix(in srgb,var(--team) 8%,var(--surface))}
+.chips .tag{font-size:10.5px;padding:0 5px;margin-left:auto}
+
+.axis-card{border-left:5px solid var(--team);transition:border-color .4s}
+.axis-card .ttl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.axis-card .ttl h3{margin:0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.kpi .k{font-size:12.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.kpi .v{font-family:var(--serif);font-size:24px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.zone{display:inline-block;font-size:13px;font-weight:700;padding:2px 8px;border-radius:999px}
+.zone.n{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.zone.r{background:var(--risk);color:var(--risk-ink)}
+.zone.c{background:var(--clin);color:var(--clin-ink)}
+.meter{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:10px}
+.meter i{display:block;height:100%;background:var(--team);transition:width .6s cubic-bezier(.4,0,.2,1),background .4s}
+
+.reading{font-family:var(--serif);font-size:17.5px;line-height:1.5}
+.note{font-size:15px;color:var(--ink-2);border:1px dashed var(--grid);border-radius:10px;padding:10px 12px;margin:14px 0}
+details.data{margin-top:12px}
+details.data summary{cursor:pointer;font-weight:700;font-size:15px;min-height:36px;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em}
+th.v{color:var(--vol)} th.f{color:var(--fut)}
+
+/* Recursos */
+.res-row{margin:14px 0 4px}
+.res-row .lab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:15.5px}
+.res-row .lab b{font-family:var(--serif);font-size:20px;font-variant-numeric:tabular-nums}
+.res-track{position:relative;height:22px;background:var(--surface-2);border-radius:6px;margin-top:6px;overflow:visible}
+.res-track .low{position:absolute;left:0;top:0;bottom:0;width:20%;background:var(--risk);border-radius:6px 0 0 6px}
+.res-track .fill{position:absolute;left:0;top:4px;bottom:4px;background:var(--team);border-radius:0 4px 4px 0;transition:width .6s cubic-bezier(.4,0,.2,1),background .4s}
+.res-track .ref{position:absolute;top:-4px;bottom:-4px;left:40%;border-left:2px dashed var(--ink)}
+.res-axis{position:relative;height:18px;font-size:12px;color:var(--ink-3)}
+.res-axis span{position:absolute;transform:translateX(-50%)}
+.res-sub{font-size:14.5px;color:var(--ink-2);margin-top:2px}
+
+/* Paso 4 */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative}
+.vs .col{background:var(--surface-2);border-radius:12px;padding:12px 10px}
+.vs .col h4{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)}
+.said{list-style:none;margin:0;padding:0}
+.said li{font-size:15px;padding:6px 8px;border-radius:8px;margin-bottom:6px;background:var(--surface);border:1px solid var(--line);line-height:1.3}
+.said li.hl{border-color:var(--team);box-shadow:inset 3px 0 0 var(--team);font-weight:700}
+.mbars{list-style:none;margin:0;padding:0}
+.mbars li{display:grid;grid-template-columns:34px 1fr 34px;gap:5px;align-items:center;font-size:13px;margin-bottom:5px;font-variant-numeric:tabular-nums}
+.mbars li .t{height:10px;border-radius:3px;background:var(--grid);position:relative}
+.mbars li .t i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:color-mix(in srgb,var(--team) 45%,var(--surface-2))}
+.mbars li.hl{font-weight:700}
+.mbars li.hl .t i{background:var(--team)}
+.mbars li .num{text-align:right}
+.stamp-wrap{display:flex;justify-content:center;margin:16px 0 6px}
+.stamp{font-family:var(--serif);font-weight:700;font-size:28px;letter-spacing:.14em;padding:6px 18px;border:3px double var(--team);color:var(--team);border-radius:8px;transform:rotate(-6deg);animation:stamp .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes stamp{from{opacity:0;transform:rotate(-6deg) scale(1.8)}to{opacity:1;transform:rotate(-6deg) scale(1)}}
+.closing{font-family:var(--serif);font-size:18px;text-align:center;line-height:1.45;padding:6px 6px 0}
+.clus .row{margin:12px 0}
+.clus .lab{display:flex;justify-content:space-between;font-size:15.5px;margin-bottom:5px;gap:8px}
+.stack{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.stack i{display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-size:13.5px;font-weight:700;min-width:0}
+.stack i.v{background:var(--vol)} .stack i.f{background:var(--fut)}
+
+/* Paso 5 */
+.hyp{border-left:5px solid var(--line);transition:border-color .4s,opacity .4s}
+.hyp.act{border-left-color:var(--team)}
+.hyp.dim{opacity:.6}
+.flow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;margin-top:10px}
+.flow .box{border-radius:10px;padding:8px 10px;background:var(--surface-2);font-size:14.5px;line-height:1.3}
+.flow .box b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)}
+.flow .box.pd{background:none;border:2px dashed var(--grid)}
+.flow .arr{align-self:center;font-size:20px;color:var(--ink-3)}
+.prog{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+
+/* Paso 6 */
+.lesson{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+.lesson .num{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:19px}
+.lesson h3{font-size:18px}
+.lim{margin:6px 0 0;padding-left:20px}
+.lim li{margin-bottom:5px}
+
+/* Pie y navegación */
+.foot{border-top:1px solid var(--line);margin-top:22px;padding:16px 0 18px;font-size:14px;color:var(--ink-3);line-height:1.5}
+.foot b{color:var(--ink-2)}
+.foot .status{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:8px;border:1px dashed var(--grid);color:var(--ink-2)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav .wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.nav button{min-height:48px;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;padding:0 14px}
+.nav .prev{background:var(--surface);border:1px solid var(--line)}
+.nav .next{background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav .count{font-size:14px;color:var(--ink-3);text-align:center;font-variant-numeric:tabular-nums}
+.hint{font-size:13.5px;color:var(--ink-3);text-align:center;margin-top:10px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="kicker">Semillero Mathesis · TdeA &nbsp;·&nbsp; EIFD – PCJIC</div>
+      <button class="theme-btn" id="themeBtn" aria-label="Cambiar entre modo claro y oscuro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+    <nav class="stepper" id="stepper" aria-label="Pasos del recorrido"></nav>
+    <div class="teamsel">
+      <div class="seg" role="group" aria-label="Seleccionar equipo">
+        <button type="button" data-team="vol" aria-pressed="true">Voleibol <small>n = 10</small></button>
+        <button type="button" data-team="fut" aria-pressed="false">Fútbol Sub-16 <small>n = 13</small></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+<!-- PASO 1 -->
+<section class="step" data-title="La pregunta" aria-labelledby="s1">
+  <div class="title-block">
+    <div class="eyebrow">Paso 1 · La pregunta</div>
+    <h1 id="s1">Del Autodiagnóstico a la Evidencia
+      <span>Efectos de un Programa Psicoeducativo Cognitivo-Conductual sobre la Ansiedad y el Control de la Ira en Deportistas Juveniles de la EIFD</span></h1>
+    <p class="authors">Ana María Bustamante Ortiz y Lina Marcela Ruiz Cadavid<br>
+      <span class="muted">Semillero de Investigación Mathesis · Programa de Psicología · Tecnológico de Antioquia – Institución Universitaria</span></p>
+  </div>
+  <p class="question">¿Cuál es el efecto de un programa psicoeducativo cognitivo-conductual, implementado entre 2025-2 y 2027-1 en la EIFD, sobre la <b>ansiedad</b> en el equipo de voleibol y sobre los <b>problemas de control de la ira</b> en el equipo de fútbol Sub-16?</p>
+  <div class="card">
+    <h3>Diseño</h3>
+    <p class="small" style="margin:0">Cuantitativo, preexperimental, pretest-postest en un solo grupo, aplicado por separado a cada equipo.</p>
+    <div class="design-chips"><span class="tag">Cuantitativo</span><span class="tag">Preexperimental</span><span class="tag">Pretest-postest</span><span class="tag">Un solo grupo por equipo</span></div>
+  </div>
+  <div class="card">
+    <h3>Línea del tiempo</h3>
+    <ol class="timeline">
+      <li><span class="dot"></span><b>Autodiagnóstico</b><span class="when">2025-2 · cada equipo nombra sus necesidades</span></li>
+      <li><span class="dot"></span><b>SENA, línea base</b><span class="when">2025-2 · medición estandarizada</span></li>
+      <li class="span"><span class="dot"></span><b>Intervención</b><span class="when">2025-2 a 2027-1 · programa psicoeducativo</span></li>
+      <li class="pend"><span class="dot"></span><b>Medición de cierre</b><span class="when">2027-1 · <em>pendiente</em></span></li>
+    </ol>
+  </div>
+  <p class="hint">Desliza o usa «Siguiente» para avanzar →</p>
+</section>
+
+<!-- PASO 2 -->
+<section class="step" data-title="Dos fuentes" aria-labelledby="s2">
+  <div class="eyebrow">Paso 2</div>
+  <h2 id="s2">Dos fuentes de diagnóstico</h2>
+  <div class="grid2">
+    <div class="card">
+      <span class="tag">Fuente (a) · no estandarizado</span>
+      <h3 style="margin-top:8px">Autodiagnóstico participativo</h3>
+      <p class="small muted">Lo que dijo cada equipo:</p>
+      <p class="small" style="margin-bottom:4px"><span class="swatch" style="--c:var(--vol)"></span><span class="team-name">Voleibol</span></p>
+      <ul class="diag-list"><li>Regulación emocional</li><li>Comunicación asertiva</li><li>Trabajo en equipo</li></ul>
+      <p class="small" style="margin:12px 0 4px"><span class="swatch" style="--c:var(--fut)"></span><span class="team-name">Fútbol Sub-16</span></p>
+      <ul class="diag-list"><li>Confianza</li><li>Control emocional</li><li>Manejo de la presión</li></ul>
+    </div>
+    <div class="card">
+      <span class="tag">Fuente (b) · estandarizado</span>
+      <h3 style="margin-top:8px">SENA</h3>
+      <p class="small">Sistema de Evaluación de Niños y Adolescentes (Fernández-Pinto et al., 2015). Instrumento estandarizado de autoinforme.</p>
+      <p class="small" style="margin-bottom:4px">Puntuaciones T: media poblacional 50, desviación 10.</p>
+      <div class="tscale" aria-label="Escala T de 30 a 80">
+        <div class="track"><div class="z-n" style="width:60%">Normal</div><div class="z-r" style="width:20%">Riesgo</div><div class="z-c" style="width:20%">Clínico</div></div>
+        <div class="ticks"><span style="left:0%;transform:none">30</span><span style="left:40%">50</span><span style="left:60%">60</span><span style="left:80%">70</span><span style="left:100%;transform:translateX(-100%)">80</span></div>
+      </div>
+      <p class="small" style="margin:0"><span class="zone r">T 60–69 = en riesgo</span> <span class="zone c">T ≥ 70 = clínicamente significativo</span></p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Muestra de línea base</h3>
+    <div class="sample">
+      <div class="row">
+        <div class="lab"><span><span class="swatch" style="--c:var(--vol)"></span><b>Voleibol</b>: n = 10 de 22 deportistas</span></div>
+        <div class="dots" id="dotsVol" style="--c:var(--vol)" aria-hidden="true"></div>
+        <p class="small muted" style="margin:6px 0 0">9 mujeres, 1 varón; 11–16 años.</p>
+      </div>
+      <div class="row">
+        <div class="lab"><span><span class="swatch" style="--c:var(--fut)"></span><b>Fútbol</b>: 14 protocolos de 27 jugadores; 13 interpretables</span></div>
+        <div class="dots" id="dotsFut" style="--c:var(--fut)" aria-hidden="true"></div>
+        <p class="small muted" style="margin:6px 0 0">Todos varones; 14–15 años.</p>
+      </div>
+      <p class="small muted" style="margin:0">● evaluado e incluido en las medias &nbsp; ◌ excluido de las medias &nbsp; ○ no evaluado</p>
+    </div>
+    <div class="note" style="margin-bottom:0">1 protocolo con escalas de control en nivel de alerta se excluyó de las medias y se revisó como caso individual.</div>
+  </div>
+</section>
+
+<!-- PASO 3 -->
+<section class="step" data-title="El perfil" aria-labelledby="s3">
+  <div class="eyebrow">Paso 3 · Línea base SENA</div>
+  <h2 id="s3">Cómo está cada equipo</h2>
+  <div class="card radar-card">
+    <div class="radar-head"><span class="small muted">Media T por escala</span><span class="n" data-bind="nlabel"></span></div>
+    <svg class="radar" id="radar1" viewBox="-184 -184 368 376" role="img" aria-label="Gráfico de radar de puntuaciones T medias por escala"></svg>
+    <div class="legend">
+      <span><i class="ln t"></i><span data-bind="teamname"></span></span>
+      <span><i class="ln"></i>T 50 media poblacional</span>
+      <span><i class="sw" style="background:var(--risk);outline:1px solid var(--risk-ink)"></i>Riesgo 60–69</span>
+      <span><i class="sw" style="background:var(--clin);outline:1px solid var(--clin-ink)"></i>Clínico ≥ 70</span>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="card axis-card" id="axisCard" aria-live="polite"></div>
+  <p class="small muted" style="margin-top:-4px">En estas escalas, una puntuación más alta indica más dificultades. Toca un eje o una etiqueta para ver el detalle.</p>
+
+  <div class="card">
+    <h3>Lectura</h3>
+    <p class="reading" id="reading" style="margin:0"></p>
+  </div>
+
+  <div class="card">
+    <h3>Recursos personales</h3>
+    <p class="small muted">Aquí más alto es mejor; por eso no van en el radar. Misma escala T; línea punteada = T 50; banda amarilla = nivel bajo (T ≤ 40).</p>
+    <div id="resources"></div>
+    <div class="res-axis" aria-hidden="true"><span style="left:0;transform:none">30</span><span style="left:20%">40</span><span style="left:40%">50</span><span style="left:60%">60</span><span style="left:80%">70</span><span style="left:100%;transform:translateX(-100%)">80</span></div>
+  </div>
+
+  <details class="card data">
+    <summary>Ver tabla de datos (ambos equipos)</summary>
+    <table id="dataTable"></table>
+    <p class="small muted" style="margin:8px 0 0">Media T y % de participantes con T ≥ 60.</p>
+  </details>
+  <div class="note">Los equipos difieren en sexo y edad; por eso se analizan por separado y no se comparan entre sí.</div>
+</section>
+
+<!-- PASO 4 -->
+<section class="step" data-title="Contraste" aria-labelledby="s4">
+  <div class="eyebrow">Paso 4</div>
+  <h2 id="s4">Autodiagnóstico frente a SENA</h2>
+  <div class="card">
+    <div class="vs">
+      <div class="col"><h4>Lo que dijo el equipo</h4><ul class="said" id="said"></ul></div>
+      <div class="col"><h4>Lo que midió el SENA</h4><ul class="mbars" id="mbars"></ul></div>
+    </div>
+    <div class="stamp-wrap"><div class="stamp" id="stamp"></div></div>
+    <p class="small" id="stampText" style="text-align:center;margin:0"></p>
+  </div>
+  <p class="closing">Por eso se necesitan las dos fuentes: el autodiagnóstico orienta y el instrumento estandarizado precisa.</p>
+  <div class="card clus">
+    <h3>Perfiles encontrados</h3>
+    <p class="small muted" style="margin-bottom:4px">Análisis de conglomerados sobre los 23 participantes, sin importar el equipo.</p>
+    <div id="clusters"></div>
+    <div class="legend" style="justify-content:flex-start;padding-left:0"><span><i class="sw" style="background:var(--vol)"></i>Voleibol</span><span><i class="sw" style="background:var(--fut)"></i>Fútbol</span></div>
+  </div>
+</section>
+
+<!-- PASO 5 -->
+<section class="step" data-title="Intervención" aria-labelledby="s5">
+  <div class="eyebrow">Paso 5</div>
+  <h2 id="s5">Intervención e hipótesis</h2>
+  <div class="card">
+    <h3>Programa psicoeducativo cognitivo-conductual</h3>
+    <p class="small" style="margin:0">De 2025-2 a 2027-1.</p>
+    <div class="prog"><span class="tag">Talleres</span><span class="tag">Campañas</span><span class="tag">Asesorías</span></div>
+  </div>
+  <div class="card hyp" id="hypH1">
+    <h3><span class="tag h">H1</span> Voleibol</h3>
+    <p class="small" style="margin:0">La ansiedad disminuirá entre la línea base (SENA-ANS) y el cierre (STAIC).</p>
+    <div class="flow"><div class="box"><b>Línea base 2025-2</b>SENA-ANS · T&nbsp;=&nbsp;60.1</div><div class="arr">→</div><div class="box pd"><b>Cierre 2027-1</b>STAIC · pendiente</div></div>
+  </div>
+  <div class="card hyp" id="hypH2">
+    <h3><span class="tag h">H2</span> Fútbol Sub-16</h3>
+    <p class="small" style="margin:0">Los problemas de control de la ira disminuirán entre la línea base (SENA-IRA) y el cierre (STAXI-NA).</p>
+    <div class="flow"><div class="box"><b>Línea base 2025-2</b>SENA-IRA · T&nbsp;=&nbsp;53.9</div><div class="arr">→</div><div class="box pd"><b>Cierre 2027-1</b>STAXI-NA · pendiente</div></div>
+  </div>
+  <div class="card">
+    <h3><span class="tag">ABAS-II</span> Conducta adaptativa</h3>
+    <p class="small" style="margin:0">Descriptivo, sin línea base equivalente.</p>
+  </div>
+  <div class="card radar-card">
+    <div class="radar-head"><span class="small muted">Línea base y postest</span><span class="n" data-bind="nlabel"></span></div>
+    <svg class="radar" id="radar2" viewBox="-184 -184 368 376" role="img" aria-label="Radar de línea base con marcador de postest pendiente"></svg>
+    <div class="legend">
+      <span><i class="ln t"></i><span>Línea base 2025-2 (<span data-bind="teamname"></span>)</span></span>
+      <span><i class="ln p"></i>Postest 2027-1: pendiente</span>
+      <span><b aria-hidden="true">→</b><span>Dirección esperada (<span data-bind="hyp"></span>)</span></span>
+    </div>
+  </div>
+  <p class="small muted">El contorno punteado es un marcador de lugar: indica la dirección esperada (hacia la media poblacional, T 50), no valores. Las hipótesis predicen una disminución en la variable de cada equipo, no un puntaje concreto. No hay resultados de postest todavía.</p>
+</section>
+
+<!-- PASO 6 -->
+<section class="step" data-title="Aprendizajes" aria-labelledby="s6">
+  <div class="eyebrow">Paso 6</div>
+  <h2 id="s6">Lo que aprendimos y lo que sigue</h2>
+  <div class="card lesson"><div class="num">1</div><div>
+    <h3>Analizar la línea base antes del cierre permitió ajustar el diseño a tiempo</h3>
+    <p class="small" style="margin:0">Ejemplo: la IRA del Sub-16 parte de un rango normal (T = 53.9), lo que limita el margen de cambio en H2.</p>
+  </div></div>
+  <div class="card lesson"><div class="num">2</div><div>
+    <h3>La evaluación también funciona como tamizaje</h3>
+    <p class="small" style="margin:0">La revisión de escalas de control e ítems críticos permitió identificar casos para remisión mediante una ruta confidencial, en un escenario deportivo sin atención clínica propia.</p>
+  </div></div>
+  <div class="card lesson"><div class="num">3</div><div>
+    <h3>Limitaciones declaradas</h3>
+    <ul class="lim small">
+      <li>Muestras pequeñas y no probabilísticas.</li>
+      <li>Sin grupo control.</li>
+      <li>Instrumentos de cierre distintos del de línea base.</li>
+      <li>Una sola fuente de información (autoinforme).</li>
+    </ul>
+  </div></div>
+</section>
+
+<footer class="foot">
+  <b>Ana María Bustamante Ortiz y Lina Marcela Ruiz Cadavid</b><br>
+  Semillero Mathesis – TdeA · EIFD – PCJIC<br>
+  <span class="status">Datos de línea base. Resultados del efecto pendientes de la medición de cierre (2027-1).</span><br>
+  <span style="display:inline-block;margin-top:8px">Solo se presentan datos grupales.</span>
+</footer>
+</div>
+</main>
+
+<nav class="nav" aria-label="Navegación entre pasos">
+  <div class="wrap">
+    <button class="prev" id="prev" type="button">← Anterior</button>
+    <div class="count" id="count" aria-live="polite"></div>
+    <button class="next" id="next" type="button">Siguiente →</button>
+  </div>
+</nav>
+
+<script>
+(function(){
+"use strict";
+/* ===================== DATOS (grupales, línea base SENA) ===================== */
+var AXES=[
+  {k:"ANS",name:"Ansiedad",chip:"Ansiedad",h:"H1",g:"Problemas interiorizados"},
+  {k:"ASC",name:"Ansiedad social",chip:"Ansiedad social",g:"Problemas interiorizados"},
+  {k:"DEP",name:"Depresión",chip:"Depresión",g:"Problemas interiorizados"},
+  {k:"PST",name:"Sintomatología postraumática",chip:"Sint. postraumática",g:"Problemas interiorizados"},
+  {k:"REG",name:"Problemas de regulación emocional",chip:"Problemas de regulación emocional",g:"Vulnerabilidad"},
+  {k:"IRA",name:"Problemas de control de la ira",chip:"Problemas de control de la ira",h:"H2",g:"Problemas exteriorizados"},
+  {k:"AGR",name:"Agresión",chip:"Agresión",g:"Problemas exteriorizados"},
+  {k:"FAM",name:"Problemas familiares",chip:"Problemas familiares",g:"Problemas contextuales"}
+];
+var TEAMS={
+  vol:{name:"Voleibol",n:10,
+    t:[60.1,65.5,61.4,60.9,66.2,56.2,55.8,59.1],
+    p:[40,70,60,70,70,30,30,60],
+    extra:{},
+    res:[{name:"Autoestima",t:43.4,low:40},{name:"Integración y competencia social",t:45.1,low:30}],
+    reading:"Perfil predominantemente interiorizado. La regulación emocional es la escala más elevada (T = 66.2; tamaño del efecto d = 1.62) y 7 de cada 10 deportistas están por encima del rango normal. La ansiedad, variable de H1, también está elevada (d = 1.01). Los recursos personales, en especial la autoestima, están por debajo de la media.",
+    said:[{t:"Regulación emocional",hl:true},{t:"Comunicación asertiva"},{t:"Trabajo en equipo"}],
+    hl:["REG"],
+    stamp:"CONFIRMA",
+    stampText:"El equipo señaló la regulación emocional y el SENA la muestra como la escala más elevada (T = 66.2)."
+  },
+  fut:{name:"Fútbol Sub-16",n:13,
+    t:[47.0,48.5,49.3,51.3,54.2,53.9,57.9,48.8],
+    p:[0,15,15,31,38,31,31,8],
+    extra:{AGR:"3 en rango clínico (T ≥ 70)"},
+    res:[{name:"Autoestima",t:58.0,low:0,note:"Única escala significativamente por encima de la media poblacional."},{name:"Integración y competencia social",t:52.4,low:8}],
+    reading:"Perfil global dentro de la norma, con autoestima por encima de la media. Las dificultades se concentran en un subgrupo y en el área exteriorizada: la escala más alta es Agresión (T = 57.9; 3 casos clínicos). El control de la ira, variable de H2, está en rango normal (T = 53.9; d = 0.39).",
+    said:[{t:"Confianza"},{t:"Control emocional",hl:true},{t:"Manejo de la presión"}],
+    hl:["AGR","IRA"],
+    stamp:"MATIZA",
+    stampText:"El equipo habló de «control emocional», y el SENA mostró más agresión (T = 57.9) que problemas de control de la ira (T = 53.9)."
+  }
+};
+var CLUSTERS=[
+  {name:"Sin dificultades relevantes",n:12,v:3,f:9},
+  {name:"Perfil interiorizado",n:5,v:5,f:0},
+  {name:"Perfil mixto-exteriorizado",n:6,v:2,f:4}
+];
+var TMIN=30,TMAX=80,R=118;
+
+/* ===================== ESTADO ===================== */
+var state={step:0,team:"vol",axis:0};
+var steps=[].slice.call(document.querySelectorAll(".step"));
+var body=document.body;
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function fmt(x){return x.toFixed(1)}
+function zone(t){return t>=70?["c","Clínico (T ≥ 70)"]:t>=60?["r","En riesgo (T 60–69)"]:["n","Rango normal (T < 60)"]}
+function el(tag,attrs,parent){var e=document.createElementNS("http://www.w3.org/2000/svg",tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+
+/* ===================== RADAR ===================== */
+function angle(i){return -Math.PI/2+i*2*Math.PI/AXES.length}
+function rad(t){return Math.max(0,(t-TMIN)/(TMAX-TMIN))*R}
+function pt(i,t,extra){var a=angle(i),r=rad(t)+(extra||0);return [r*Math.cos(a),r*Math.sin(a)]}
+// Marcador del postest: solo indica dirección (hacia T 50), con un desplazamiento gráfico fijo. No son valores.
+function pendVals(v){return v.map(function(t){var d=t-50;return t-Math.sign(d)*Math.min(Math.abs(d),3)})}
+function pathFor(vals,extra){return vals.map(function(t,i){var p=pt(i,t,extra);return (i?"L":"M")+p[0].toFixed(2)+" "+p[1].toFixed(2)}).join("")+"Z"}
+
+function Radar(svg,opts){
+  this.svg=svg;this.opts=opts||{};
+  this.cur=TEAMS[state.team].t.slice();
+  this.build();
+}
+Radar.prototype.build=function(){
+  var s=this.svg,self=this;
+  var r60=rad(60),r70=rad(70),r80=rad(80);
+  // Bandas de referencia
+  el("path",{"class":"band-r",d:"M"+r60+" 0A"+r60+" "+r60+" 0 1 0 "+(-r60)+" 0A"+r60+" "+r60+" 0 1 0 "+r60+" 0Z M"+r70+" 0A"+r70+" "+r70+" 0 1 1 "+(-r70)+" 0A"+r70+" "+r70+" 0 1 1 "+r70+" 0Z","fill-rule":"evenodd"},s);
+  el("path",{"class":"band-c",d:"M"+r70+" 0A"+r70+" "+r70+" 0 1 0 "+(-r70)+" 0A"+r70+" "+r70+" 0 1 0 "+r70+" 0Z M"+r80+" 0A"+r80+" "+r80+" 0 1 1 "+(-r80)+" 0A"+r80+" "+r80+" 0 1 1 "+r80+" 0Z","fill-rule":"evenodd"},s);
+  [40,80].forEach(function(t){el("circle",{"class":"ring",r:rad(t)},s)});
+  el("circle",{"class":"ring m",r:rad(50)},s);
+  el("circle",{"class":"ring r60",r:r60},s);
+  el("circle",{"class":"ring r70",r:r70},s);
+  this.spokes=AXES.map(function(a,i){var p=pt(i,TMAX);return el("line",{"class":"spoke",x1:0,y1:0,x2:p[0],y2:p[1]},s)});
+  // Rótulos de anillos (entre ANS y ASC)
+  var la=-Math.PI/2+Math.PI/8;
+  [[50,"T 50","var(--ink-2)"],[60,"T 60","var(--risk-ink)"],[70,"T 70","var(--clin-ink)"]].forEach(function(o){
+    var r=rad(o[0]);var t=el("text",{"class":"ringlab",x:(r*Math.cos(la)+2).toFixed(1),y:(r*Math.sin(la)+2).toFixed(1),"text-anchor":"start",fill:o[2]},s);t.textContent=o[1];
+  });
+  // Polígono pendiente (marcador sin valores)
+  this.poly=el("path",{"class":"poly",d:pathFor(this.cur)},s);
+  if(this.opts.pending){
+    this.pend=el("path",{"class":"pend",d:pathFor(pendVals(this.cur))},s);
+    var pl=el("text",{"class":"pendlab",x:0,y:R+64,"text-anchor":"middle"},s);pl.textContent="Postest 2027-1: pendiente";
+  }
+  this.vtx=AXES.map(function(a,i){var p=pt(i,self.cur[i]);return el("circle",{"class":"vtx",cx:p[0],cy:p[1],r:4.5},s)});
+  if(this.opts.pending)this.arrow=el("path",{"class":"harrow"},s);
+  // Zonas táctiles + etiquetas
+  this.labels=[];this.vals=[];this.groups=[];
+  AXES.forEach(function(a,i){
+    var g=el("g",{"class":"ax",tabindex:"0",role:"button","aria-label":a.name+(a.h?" ("+a.h+")":"")},s);
+    var a0=angle(i)-Math.PI/8,a1=angle(i)+Math.PI/8,RR=R+52;
+    el("path",{"class":"hit",d:"M0 0L"+(RR*Math.cos(a0)).toFixed(1)+" "+(RR*Math.sin(a0)).toFixed(1)+"A"+RR+" "+RR+" 0 0 1 "+(RR*Math.cos(a1)).toFixed(1)+" "+(RR*Math.sin(a1)).toFixed(1)+"Z"},g);
+    var ang=angle(i),cx=Math.cos(ang),cy=Math.sin(ang);
+    var lx=(R+30)*cx+(Math.abs(cx)>.9?cx*10:0),ly=(R+28)*cy;
+    var t1=el("text",{"class":"abbr",x:lx,y:ly-2,"text-anchor":"middle"},g);t1.textContent=a.k;
+    var t2=el("text",{"class":"val",x:lx,y:ly+14,"text-anchor":"middle"},g);t2.textContent=fmt(self.cur[i]);
+    if(a.h){
+      var pg=el("g",{"class":"pill"},g);
+      el("rect",{x:lx-47,y:ly-16,width:24,height:16,rx:8},pg);
+      var pt2=el("text",{x:lx-35,y:ly-4.5,"text-anchor":"middle"},pg);pt2.textContent=a.h;
+    }
+    function pick(e){e.preventDefault();selectAxis(i)}
+    g.addEventListener("click",pick);
+    g.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" ")pick(e)});
+    self.groups.push(g);self.vals.push(t2);
+  });
+};
+Radar.prototype.draw=function(vals){
+  this.poly.setAttribute("d",pathFor(vals));
+  if(this.pend){this.pend.setAttribute("d",pathFor(pendVals(vals)));this.drawArrow(vals)}
+  for(var i=0;i<vals.length;i++){var p=pt(i,vals[i]);this.vtx[i].setAttribute("cx",p[0]);this.vtx[i].setAttribute("cy",p[1]);this.vals[i].textContent=fmt(vals[i])}
+};
+Radar.prototype.drawArrow=function(vals){
+  var i=this.hAxis;if(i==null||!this.arrow)return;
+  var a=angle(i),c=Math.cos(a),s=Math.sin(a),r0=rad(vals[i])+36,r1=rad(vals[i])+11,px=-s,py=c;
+  var x0=r0*c,y0=r0*s,x1=r1*c,y1=r1*s,hx=x1+7*c,hy=y1+7*s;
+  this.arrow.setAttribute("d","M"+x0.toFixed(1)+" "+y0.toFixed(1)+"L"+x1.toFixed(1)+" "+y1.toFixed(1)+"M"+(hx+5*px).toFixed(1)+" "+(hy+5*py).toFixed(1)+"L"+x1.toFixed(1)+" "+y1.toFixed(1)+"L"+(hx-5*px).toFixed(1)+" "+(hy-5*py).toFixed(1));
+};
+Radar.prototype.to=function(target,animate){
+  var self=this,from=this.cur.slice(),start=null,D=600;
+  cancelAnimationFrame(this.raf);
+  if(!animate||reduce){this.cur=target.slice();this.draw(this.cur);return}
+  function ease(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2}
+  function frame(ts){
+    if(!start)start=ts;var k=Math.min(1,(ts-start)/D),e=ease(k);
+    self.cur=from.map(function(f,i){return f+(target[i]-f)*e});
+    self.draw(self.cur);
+    if(k<1)self.raf=requestAnimationFrame(frame);else{self.cur=target.slice();self.draw(self.cur)}
+  }
+  this.raf=requestAnimationFrame(frame);
+};
+Radar.prototype.select=function(idx){
+  for(var i=0;i<AXES.length;i++){
+    var on=i===idx;
+    this.spokes[i].classList.toggle("sel",on);
+    this.vtx[i].classList.toggle("sel",on);this.vtx[i].setAttribute("r",on?7:4.5);
+    this.groups[i].classList.toggle("sel",on);
+  }
+};
+
+var radar1=new Radar(document.getElementById("radar1"));
+var radar2=new Radar(document.getElementById("radar2"),{pending:true});
+// En el paso 5 los ejes no abren tarjeta: solo resaltan
+radar2.groups.forEach(function(g){g.removeAttribute("tabindex");g.removeAttribute("role");g.style.cursor="default"});
+radar2.svg.addEventListener("click",function(e){e.stopPropagation()},true);
+
+/* ===================== CHIPS + TARJETA DE EJE ===================== */
+var chips=document.getElementById("chips");
+AXES.forEach(function(a,i){
+  var b=document.createElement("button");b.type="button";
+  b.innerHTML="<b>"+a.k+"</b><span>"+a.chip+"</span>"+(a.h?'<span class="tag h">'+a.h+"</span>":"");
+  b.addEventListener("click",function(){selectAxis(i)});
+  chips.appendChild(b);
+});
+function selectAxis(i){state.axis=i;renderAxis()}
+function renderAxis(){
+  var a=AXES[state.axis],T=TEAMS[state.team],t=T.t[state.axis],p=T.p[state.axis],z=zone(t);
+  [].forEach.call(chips.children,function(b,j){b.setAttribute("aria-pressed",j===state.axis?"true":"false")});
+  radar1.select(state.axis);
+  var extra=T.extra[a.k]?'<p class="small" style="margin:10px 0 0"><span class="zone c">'+T.extra[a.k]+"</span></p>":"";
+  document.getElementById("axisCard").innerHTML=
+    '<div class="ttl"><h3>'+a.name+' <span class="muted" style="font-weight:600">('+a.k+")</span></h3>"+(a.h?'<span class="tag h">'+a.h+"</span>":"")+'<span class="zone '+z[0]+'">'+z[1]+"</span></div>"+
+    '<div class="kpis"><div class="kpi"><div class="k">Media T</div><div class="v">'+fmt(t)+'</div></div>'+
+    '<div class="kpi"><div class="k">n</div><div class="v">'+T.n+'</div></div>'+
+    '<div class="kpi"><div class="k">Elevados</div><div class="v">'+p+'%</div></div></div>'+
+    '<div class="meter" aria-hidden="true"><i style="width:'+p+'%"></i></div>'+
+    '<p class="small muted" style="margin:6px 0 0">'+T.name+": "+p+"% de participantes con T ≥ 60.</p>"+extra+
+    '<p class="small" style="margin:10px 0 0"><span class="tag">'+a.g+'</span> <span class="muted">Más alto = más dificultad.</span></p>';
+}
+
+/* ===================== RECURSOS ===================== */
+function pctT(t){return Math.max(0,Math.min(100,(t-TMIN)/(TMAX-TMIN)*100))}
+var resBox=document.getElementById("resources");
+resBox.innerHTML=[0,1].map(function(i){return '<div class="res-row"><div class="lab"><span data-r="name'+i+'"></span><b data-r="t'+i+'"></b></div>'+
+  '<div class="res-track"><div class="low"></div><div class="fill" data-r="fill'+i+'"></div><div class="ref"></div></div>'+
+  '<div class="res-sub" data-r="sub'+i+'"></div></div>'}).join("");
+function q(s){return resBox.querySelector('[data-r="'+s+'"]')}
+function renderRes(){
+  TEAMS[state.team].res.forEach(function(r,i){
+    q("name"+i).textContent=r.name;
+    q("t"+i).textContent="T "+fmt(r.t);
+    q("fill"+i).style.width=pctT(r.t)+"%";
+    q("sub"+i).textContent=r.low+"% en nivel bajo (T ≤ 40)"+(r.note?". "+r.note:"");
+  });
+}
+
+/* ===================== TABLA ===================== */
+(function(){
+  var h='<thead><tr><th>Escala</th><th class="v">Vol. T</th><th class="v">%</th><th class="f">Fút. T</th><th class="f">%</th></tr></thead><tbody>';
+  AXES.forEach(function(a,i){h+="<tr><td>"+a.k+" · "+a.chip+(a.h?" ("+a.h+")":"")+"</td><td>"+fmt(TEAMS.vol.t[i])+"</td><td>"+TEAMS.vol.p[i]+"%</td><td>"+fmt(TEAMS.fut.t[i])+"</td><td>"+TEAMS.fut.p[i]+"%</td></tr>"});
+  h+='<tr><td colspan="5" style="text-align:left;color:var(--ink-3);font-size:13px">n voleibol = 10 · n fútbol = 13 · AGR fútbol: 3 en rango clínico</td></tr></tbody>';
+  document.getElementById("dataTable").innerHTML=h;
+})();
+
+/* ===================== PASO 4 ===================== */
+function renderCompare(){
+  var T=TEAMS[state.team];
+  document.getElementById("said").innerHTML=T.said.map(function(s){return '<li class="'+(s.hl?"hl":"")+'">'+s.t+"</li>"}).join("");
+  var order=AXES.map(function(a,i){return i}).sort(function(x,y){return T.t[y]-T.t[x]});
+  document.getElementById("mbars").innerHTML=order.map(function(i){
+    var k=AXES[i].k,hl=T.hl.indexOf(k)>=0;
+    return '<li class="'+(hl?"hl":"")+'"><span>'+k+'</span><span class="t"><i style="width:'+pctT(T.t[i])+'%"></i></span><span class="num">'+fmt(T.t[i])+"</span></li>";
+  }).join("");
+  var st=document.getElementById("stamp");
+  st.textContent=T.stamp;st.style.animation="none";void st.offsetWidth;st.style.animation="";
+  document.getElementById("stampText").textContent=T.stampText;
+}
+document.getElementById("clusters").innerHTML=CLUSTERS.map(function(c){
+  var w=c.n/12*100;
+  return '<div class="row"><div class="lab"><span>'+c.name+'</span><b>n = '+c.n+'</b></div>'+
+    '<div class="stack" style="width:'+w+'%">'+(c.v?'<i class="v" style="flex:'+c.v+'">'+c.v+'</i>':"")+(c.f?'<i class="f" style="flex:'+c.f+'">'+c.f+'</i>':"")+'</div>'+
+    '<div class="res-sub">'+c.v+' voleibol'+', '+c.f+' fútbol</div></div>';
+}).join("");
+
+/* ===================== PASO 5 ===================== */
+function renderHyp(){
+  var v=state.team==="vol";
+  document.getElementById("hypH1").className="card hyp "+(v?"act":"dim");
+  document.getElementById("hypH2").className="card hyp "+(v?"dim":"act");
+  radar2.select(v?0:5);
+  radar2.hAxis=v?0:5;radar2.drawArrow(radar2.cur);
+}
+
+/* ===================== MUESTRA (puntos) ===================== */
+function dots(id,total,inc,exc){var h="";for(var i=0;i<total;i++)h+='<i class="'+(i<inc?"f":i<inc+exc?"x":"")+'"></i>';document.getElementById(id).innerHTML=h}
+dots("dotsVol",22,10,0);dots("dotsFut",27,13,1);
+
+/* ===================== EQUIPO ===================== */
+var segBtns=[].slice.call(document.querySelectorAll(".seg button"));
+function setTeam(team,animate){
+  state.team=team;
+  body.classList.toggle("fut",team==="fut");
+  segBtns.forEach(function(b){b.setAttribute("aria-pressed",b.dataset.team===team?"true":"false")});
+  var T=TEAMS[team];
+  [].forEach.call(document.querySelectorAll('[data-bind="nlabel"]'),function(e){e.innerHTML="<b>"+T.name+"</b> · n = "+T.n});
+  [].forEach.call(document.querySelectorAll('[data-bind="teamname"]'),function(e){e.textContent=T.name});
+  [].forEach.call(document.querySelectorAll('[data-bind="hyp"]'),function(e){e.textContent=team==="vol"?"H1: ansiedad":"H2: control de la ira"});
+  radar1.to(T.t,animate);radar2.to(T.t,animate);
+  document.getElementById("reading").textContent=T.reading;
+  renderAxis();renderRes();renderCompare();renderHyp();
+}
+segBtns.forEach(function(b){b.addEventListener("click",function(){if(b.dataset.team!==state.team)setTeam(b.dataset.team,true)})});
+
+/* ===================== NAVEGACIÓN ===================== */
+var stepper=document.getElementById("stepper");
+steps.forEach(function(s,i){
+  var b=document.createElement("button");b.type="button";
+  b.setAttribute("aria-label","Paso "+(i+1)+": "+s.dataset.title);
+  b.innerHTML='<span class="bar"></span><span class="lbl">'+(i+1)+". "+s.dataset.title+"</span>";
+  b.addEventListener("click",function(){go(i)});
+  stepper.appendChild(b);
+});
+var prev=document.getElementById("prev"),next=document.getElementById("next"),count=document.getElementById("count");
+function go(i,fromHash){
+  if(i<0||i>=steps.length)return;
+  var back=i<state.step;state.step=i;
+  steps.forEach(function(s,j){s.classList.toggle("on",j===i);s.classList.toggle("back",j===i&&back)});
+  [].forEach.call(stepper.children,function(b,j){b.classList.toggle("on",j===i);b.classList.toggle("done",j<i);if(j===i)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current")});
+  body.classList.toggle("show-team",i>=2&&i<=4);
+  prev.disabled=i===0;
+  next.textContent=i===steps.length-1?"Inicio ↺":"Siguiente →";
+  count.textContent=(i+1)+" / "+steps.length;
+  if(i===3)renderCompare();
+  if(!fromHash&&history.replaceState)history.replaceState(null,"","#paso-"+(i+1));
+  window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+}
+prev.addEventListener("click",function(){go(state.step-1)});
+next.addEventListener("click",function(){go(state.step===steps.length-1?0:state.step+1)});
+document.addEventListener("keydown",function(e){
+  if(e.target.closest&&e.target.closest("input,textarea"))return;
+  if(e.key==="ArrowRight")go(state.step+1);else if(e.key==="ArrowLeft")go(state.step-1);
+});
+// Deslizar
+var sx=0,sy=0,st0=0,tracking=false;
+var mainEl=document.getElementById("main");
+mainEl.addEventListener("touchstart",function(e){if(e.touches.length!==1){tracking=false;return}tracking=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;st0=Date.now()},{passive:true});
+mainEl.addEventListener("touchend",function(e){
+  if(!tracking)return;tracking=false;
+  var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6&&Date.now()-st0<800){go(state.step+(dx<0?1:-1))}
+},{passive:true});
+
+/* ===================== TEMA ===================== */
+var root=document.documentElement;
+try{var saved=localStorage.getItem("eifd-theme");if(saved)root.setAttribute("data-theme",saved)}catch(e){}
+document.getElementById("themeBtn").addEventListener("click",function(){
+  var cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  var nx=cur==="dark"?"light":"dark";root.setAttribute("data-theme",nx);
+  try{localStorage.setItem("eifd-theme",nx)}catch(e){}
+});
+
+/* ===================== INICIO ===================== */
+setTeam("vol",false);
+var m=/paso-(\d)/.exec(location.hash);
+go(m?Math.min(6,Math.max(1,+m[1]))-1:0,true);
+})();
+</script>
+</body>
+</html>
