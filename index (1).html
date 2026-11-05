@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Línea base SENA a fondo</title>
+<meta name="description" content="Análisis estadístico completo (datos grupales) de la línea base SENA del proyecto «Del Autodiagnóstico a la Evidencia». Semillero Mathesis – TdeA · EIFD – PCJIC.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface-2:#efede7; --ink:#1c2230; --ink-2:#4a5263; --ink-3:#717a8c;
+  --line:#d9d6cd; --grid:#d3cfc4;
+  --vol:#2a78d6; --fut:#eb6834; --team:var(--vol);
+  --bad:#cf4f38; --good:#21877a; --neutral:#8a8f9c;
+  --c1:#3d8a63; --c2:#7457cf; --c3:#c0397a;
+  --risk:rgba(232,190,40,.20); --clin:rgba(236,120,96,.20);
+  --shadow:0 1px 2px rgba(20,24,35,.06),0 4px 16px rgba(20,24,35,.06);
+  --serif:"Source Serif 4",Georgia,serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1218; --surface:#171b24; --surface-2:#212633; --ink:#eceef3; --ink-2:#b7bdca; --ink-3:#8b93a5;
+    --line:#2c3240; --grid:#363d4c;
+    --vol:#4b8fe2; --fut:#f07a4a; --bad:#f07a62; --good:#45b8a8; --neutral:#7d8494;
+    --c1:#5cb889; --c2:#9b84ee; --c3:#e76aa3;
+    --risk:rgba(232,190,40,.13); --clin:rgba(236,120,96,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --surface:#171b24; --surface-2:#212633; --ink:#eceef3; --ink-2:#b7bdca; --ink-3:#8b93a5;
+  --line:#2c3240; --grid:#363d4c;
+  --vol:#4b8fe2; --fut:#f07a4a; --bad:#f07a62; --good:#45b8a8; --neutral:#7d8494;
+  --c1:#5cb889; --c2:#9b84ee; --c3:#e76aa3;
+  --risk:rgba(232,190,40,.13); --clin:rgba(236,120,96,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+body.fut{--team:var(--fut)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);overflow-x:hidden;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+h1,h2,h3{font-family:var(--serif);line-height:1.2;margin:0}
+p{margin:0 0 .75em}
+button{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{padding-top:10px;padding-bottom:10px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.kicker{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.theme-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;flex:none}
+.theme-btn svg{width:17px;height:17px}
+.stepper{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:9px}
+.stepper button{border:0;padding:0;min-width:0;background:none;cursor:pointer;text-align:left}
+.stepper .bar{display:block;height:5px;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.stepper .bar::after{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+.stepper button.done .bar::after,.stepper button.on .bar::after{transform:scaleX(1)}
+.stepper .lbl{display:block;font-size:11px;color:var(--ink-3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stepper button.on .lbl{color:var(--ink);font-weight:700}
+.teamsel{display:none;margin-top:10px}
+body.show-team .teamsel{display:block}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:999px;padding:4px;position:relative;border:1px solid var(--line)}
+.seg::before{content:"";position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:999px;background:var(--vol);transition:transform .35s cubic-bezier(.4,0,.2,1),background .35s}
+body.fut .seg::before{transform:translateX(100%);background:var(--fut)}
+.seg button{position:relative;z-index:1;border:0;background:none;padding:8px 6px;font-weight:700;font-size:15.5px;cursor:pointer;border-radius:999px;color:var(--ink-2);transition:color .3s}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg small{font-weight:400;opacity:.9;font-size:12.5px}
+main{min-height:60vh;touch-action:pan-y}
+.step{display:none;padding:22px 0 8px}
+.step.on{display:block;animation:enter .42s cubic-bezier(.2,.7,.2,1)}
+.step.on.back{animation-name:enterBack}
+@keyframes enter{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes enterBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.step h2{font-size:clamp(24px,6.4vw,31px);margin-bottom:10px}
+.lead{font-size:16.5px;color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin:14px 0}
+.card.chart{padding:12px 8px 12px}
+.card h3{font-size:18.5px;margin-bottom:8px}
+.muted{color:var(--ink-3)}
+.small{font-size:15px}
+.tiny{font-size:13.5px;color:var(--ink-3);line-height:1.45}
+.tag{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2);background:var(--surface-2);vertical-align:middle}
+.tag.solid{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+svg{display:block;width:100%;height:auto;overflow:visible;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+svg text{font-family:var(--sans)}
+.ax-t{font-size:11px;fill:var(--ink-3)}
+.ax-l{stroke:var(--grid);stroke-width:1}
+.lab{font-size:12px;fill:var(--ink-2)}
+.lab b,.lab .c{font-weight:700;fill:var(--ink)}
+.grp{font-size:10.5px;font-weight:700;letter-spacing:.06em;fill:var(--ink-3);text-transform:uppercase}
+.hit{fill:transparent;cursor:pointer}
+.sel-bg{fill:color-mix(in srgb,var(--team) 12%,transparent)}
+.ci{stroke:var(--team);stroke-width:2.2;stroke-linecap:round;transition:stroke .4s}
+.pt{stroke:var(--team);stroke-width:2;transition:stroke .4s,fill .4s}
+.pt.sig{fill:var(--team)}
+.pt.ns{fill:var(--surface)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13.5px;color:var(--ink-2);padding:8px 6px 0;justify-content:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;border:2px solid var(--team)}
+.dot.f{background:var(--team)}
+.sw{width:16px;height:10px;border-radius:2px;display:inline-block}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:0 6px 8px}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px;font-weight:700;cursor:pointer;min-height:36px;color:var(--ink-2)}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.detail{border-left:5px solid var(--team);transition:border-color .4s}
+.detail .ttl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.detail h3{margin:0}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kpi{background:var(--surface-2);border-radius:10px;padding:8px 10px;min-width:0}
+.kpi .k{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.kpi .v{font-family:var(--serif);font-size:21px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .s{font-size:12.5px;color:var(--ink-3)}
+.mag{font-weight:700}
+.note{font-size:14.5px;color:var(--ink-2);border:1px dashed var(--grid);border-radius:10px;padding:10px 12px;margin:14px 0}
+/* Hero */
+.hero h1{font-size:clamp(27px,7.4vw,38px);letter-spacing:-.01em}
+.hero .sub{font-size:16.5px;color:var(--ink-2);margin-top:8px}
+.counters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.counter{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
+.counter .n{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.counter .n small{font-size:17px;color:var(--ink-3);font-weight:600}
+.counter .t{font-size:14px;color:var(--ink-2);margin-top:6px;line-height:1.35}
+.counter.v .n{color:var(--vol)} .counter.f .n{color:var(--fut)}
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.tiles .gh{grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-top:6px}
+.tile{border:0;border-radius:8px;padding:6px 2px;text-align:center;cursor:pointer;min-height:48px;display:flex;flex-direction:column;justify-content:center;transition:background-color .6s,color .6s;position:relative}
+.tile b{font-size:12.5px;letter-spacing:.02em}
+.tile span{font-size:12px;font-variant-numeric:tabular-nums}
+.tile.sig::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:currentColor}
+.scale-bar{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--good),var(--surface-2) 38%,var(--bad));margin:10px 0 4px}
+.scale-lab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-3)}
+/* Waffle */
+.waffle{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.waffle i{width:22px;height:22px;border-radius:50%;border:2px solid var(--grid);display:block;transition:background .4s,border-color .4s}
+.waffle i.on{background:var(--team);border-color:var(--team)}
+.waffle i.exp{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink-3)}
+/* Range */
+input[type=range]{width:100%;accent-color:var(--ink);height:32px}
+.readout{font-family:var(--serif);font-size:19px;line-height:1.4}
+.readout b{font-variant-numeric:tabular-nums}
+.pw-table{width:100%;border-collapse:collapse;font-size:14.5px;font-variant-numeric:tabular-nums;margin-top:8px}
+.pw-table td,.pw-table th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
+.pw-table td:first-child,.pw-table th:first-child{text-align:left}
+.pw-table th{font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em}
+.bar80{display:block;margin-left:auto!important;height:8px;border-radius:4px;background:var(--surface-2);width:70px;vertical-align:middle;overflow:hidden;margin-left:6px}
+.bar80 i{display:block;height:100%;background:var(--ink)}
+.cl-btns{display:flex;gap:6px;flex-wrap:wrap;padding:0 6px 8px}
+.cl-btns button{border:2px solid var(--c);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);min-height:36px}
+.cl-btns button[aria-pressed="true"]{background:var(--c);color:#fff}
+.foot{border-top:1px solid var(--line);margin-top:22px;padding:16px 0 18px;font-size:14px;color:var(--ink-3);line-height:1.5}
+.foot b{color:var(--ink-2)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav .wrap{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}
+.nav button{min-height:48px;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;padding:0 14px}
+.nav .prev{background:var(--surface);border:1px solid var(--line)}
+.nav .next{background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+.nav button:disabled{opacity:.35;cursor:default}
+.nav .count{font-size:14px;color:var(--ink-3);text-align:center;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <div class="kicker">Línea base SENA a fondo · Mathesis – TdeA</div>
+      <button class="theme-btn" id="themeBtn" aria-label="Cambiar entre modo claro y oscuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+    <nav class="stepper" id="stepper" aria-label="Capítulos"></nav>
+    <div class="teamsel">
+      <div class="seg" role="group" aria-label="Seleccionar equipo">
+        <button type="button" data-team="v" aria-pressed="true">Voleibol <small>n = 10</small></button>
+        <button type="button" data-team="f" aria-pressed="false">Fútbol Sub-16 <small>n = 13</small></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main"><div class="wrap">
+
+<!-- 0 · HUELLA -->
+<section class="step hero" data-title="Huella" data-team="1">
+  <div class="eyebrow">Lo que no cupo en el póster</div>
+  <h1>29 escalas, 23 deportistas, una sola línea base</h1>
+  <p class="sub">Aquí está el análisis estadístico completo detrás del póster: todas las escalas del SENA, sus intervalos de confianza, la red de relaciones, los perfiles por dentro y la potencia del diseño.</p>
+  <div class="counters">
+    <div class="counter v"><div class="n"><span data-count="13">0</span><small> / 29</small></div><div class="t">escalas en las que <b>voleibol</b> difiere de la población (q &lt; .05)</div></div>
+    <div class="counter f"><div class="n"><span data-count="1">0</span><small> / 29</small></div><div class="t">escala en la que <b>fútbol</b> difiere: autoestima, y a favor</div></div>
+    <div class="counter"><div class="n"><span data-count="56">0</span><small> %</small></div><div class="t">de la variación del malestar emocional asociada a la regulación emocional</div></div>
+    <div class="counter"><div class="n"><span data-count="29">0</span><small> %</small></div><div class="t">de potencia para detectar un efecto mediano con n = 10</div></div>
+  </div>
+  <div class="card">
+    <h3>La huella de cada equipo</h3>
+    <p class="tiny" style="margin-bottom:8px">Cada casilla es una escala. El color indica cuánto se aleja el grupo de la población (d de Cohen) y si ese alejamiento es desfavorable o favorable. El punto marca diferencias significativas. Toca una casilla para ver su detalle.</p>
+    <div class="tiles" id="tiles"></div>
+    <div class="scale-bar" aria-hidden="true"></div>
+    <div class="scale-lab"><span>Favorable</span><span>Igual a la población</span><span>Desfavorable</span></div>
+  </div>
+  <p class="tiny">Cambia de equipo arriba para ver la otra huella. Los equipos difieren en sexo y edad: cada huella se lee frente a la población, no frente al otro equipo.</p>
+</section>
+
+<!-- 1 · 29 ESCALAS -->
+<section class="step" data-title="29 escalas" data-team="1">
+  <div class="eyebrow">1 · Perfil completo</div>
+  <h2>Cada escala, con su incertidumbre</h2>
+  <p class="lead">La media del grupo con su intervalo de confianza del 95 %. Si la línea no toca el 50, esa escala, mirada sola, difiere de la población; el punto relleno indica que la diferencia se mantiene tras corregir por las 29 pruebas. El eje superior traduce la misma distancia a d de Cohen.</p>
+  <div class="card chart">
+    <div class="toolbar"><button class="pill" data-sort="dom" aria-pressed="true">Por dominio</button><button class="pill" data-sort="size" aria-pressed="false">Por tamaño del efecto</button></div>
+    <svg id="forest" role="img" aria-label="Gráfico de bosque de las 29 escalas"></svg>
+    <div class="legend">
+      <span><i class="dot f"></i>Significativa (q &lt; .05)</span><span><i class="dot"></i>No significativa</span>
+      <span><i class="sw" style="background:var(--surface-2);outline:1px solid var(--grid)"></i>Diferencia trivial (|d| &lt; 0.2)</span><span><i class="sw" style="background:none;border-top:2px dashed var(--grid);height:0"></i>Efecto mediano (±0.5) y grande (±0.8)</span>
+    </div>
+  </div>
+  <div class="card detail" id="detail" aria-live="polite"></div>
+  <p class="tiny">q = valor p ajustado por Benjamini-Hochberg (29 pruebas por equipo). d = (M − 50) / 10. En recursos personales (REC, AUT, SOC) un valor alto es favorable; en CNC un valor alto no indica un problema. IC 95 % calculado a partir de M, DE y n publicados.</p>
+</section>
+
+<!-- 2 · PREVALENCIA -->
+<section class="step" data-title="Prevalencia" data-team="1">
+  <div class="eyebrow">2 · ¿Más casos de lo esperado?</div>
+  <h2>Contra el 15.9 % de la población</h2>
+  <p class="lead">En la población, cerca de 1 de cada 6 adolescentes puntúa elevado en cualquier escala. La línea vertical marca ese 15.9 %. Cada punto es el porcentaje observado en el grupo.</p>
+  <div class="card chart">
+    <svg id="prev" role="img" aria-label="Porcentaje de participantes elevados frente a lo esperado"></svg>
+    <div class="legend"><span><i class="dot f"></i>Supera lo esperado (prueba binomial, q &lt; .05)</span><span><i class="dot"></i>Compatible con lo esperado</span></div>
+  </div>
+  <div class="card detail" id="waffleCard" aria-live="polite"></div>
+  <p class="tiny">Elevado: T ≥ 60 en problemas y vulnerabilidades; T ≤ 40 en recursos personales (REC, AUT, SOC). Se omite CNC. Prueba binomial exacta bilateral, ajustada por Benjamini-Hochberg.</p>
+</section>
+
+<!-- 3 · RELACIONES -->
+<section class="step" data-title="Relaciones">
+  <div class="eyebrow">3 · Muestra total, n = 23</div>
+  <h2>La regulación emocional en el centro de la red</h2>
+  <p class="lead">Correlaciones de Spearman entre escalas. El grosor de cada línea es la fuerza de la relación. Toca una línea o una escala.</p>
+  <div class="card chart">
+    <svg id="net" viewBox="0 0 360 330" role="img" aria-label="Red de correlaciones entre escalas"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--bad)"></i>Positiva: suben juntas</span><span><i class="sw" style="background:var(--good)"></i>Negativa: una sube, la otra baja</span><span><i class="sw" style="background:none;border-top:2px dashed var(--neutral);height:0"></i>No significativa</span></div>
+  </div>
+  <div class="card detail" id="netCard" style="border-left-color:var(--ink)" aria-live="polite"></div>
+  <div class="card chart">
+    <h3 style="padding:4px 8px 0">Regulación emocional → malestar emocional</h3>
+    <p class="tiny" style="padding:0 8px">Regresión lineal simple en la muestra total. La banda muestra las pendientes compatibles con los datos (IC 95 % de b). Mueve el control.</p>
+    <svg id="reg" viewBox="0 0 360 290" role="img" aria-label="Recta de regresión"></svg>
+    <div style="padding:4px 10px 0">
+      <label class="tiny" for="regX">Problemas de regulación emocional (T)</label>
+      <input type="range" id="regX" min="40" max="80" step="1" value="70">
+      <p class="readout" id="regOut" style="margin:4px 0 0"></p>
+    </div>
+  </div>
+  <p class="tiny">Correlación no es causalidad: son asociaciones en un solo momento. Algunas relaciones están infladas porque el índice contiene a la escala (EMO incluye DEP, ANS y ASC). Regresión: F(1, 21) = 27.21, p &lt; .001; b = 0.68 (EE = 0.13); IC 95 % de b = b ± t(21)·EE. La recta pasa por las medias de la muestra total; no se muestran puntos individuales.</p>
+</section>
+
+<!-- 4 · PERFILES -->
+<section class="step" data-title="Perfiles">
+  <div class="eyebrow">4 · Conglomerados por dentro</div>
+  <h2>Tres firmas psicológicas</h2>
+  <p class="lead">Puntuación T media de cada perfil en 15 escalas. El análisis (Ward, distancia euclídea, 16 escalas) agrupó a los 23 participantes sin mirar a qué equipo pertenecían.</p>
+  <div class="card chart">
+    <div class="cl-btns" id="clBtns"></div>
+    <svg id="clus" role="img" aria-label="Perfil medio de cada conglomerado"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--risk);outline:1px solid #b89a2a"></i>Riesgo 60–69</span><span><i class="sw" style="background:var(--clin);outline:1px solid #c0705a"></i>Clínico ≥ 70</span><span>AUT y SOC: más alto es mejor</span></div>
+  </div>
+  <div class="card detail" id="clCard" aria-live="polite"></div>
+</section>
+
+<!-- 5 · POTENCIA -->
+<section class="step" data-title="Potencia">
+  <div class="eyebrow">5 · Mirando al cierre de 2027-1</div>
+  <h2>¿Podremos detectar el cambio?</h2>
+  <p class="lead">Potencia = probabilidad de que la prueba pretest-postest detecte un efecto que sí existe. Mueve el tamaño del efecto y mira cómo cambia con el tamaño de la muestra.</p>
+  <div class="card chart">
+    <svg id="pow" viewBox="0 0 360 260" role="img" aria-label="Curva de potencia"></svg>
+    <div style="padding:4px 10px 0">
+      <label class="tiny" for="dSl">Tamaño del efecto del programa (d de las diferencias pre-post)</label>
+      <input type="range" id="dSl" min="0.2" max="1.5" step="0.05" value="0.5">
+      <p class="readout" id="powOut" style="margin:4px 0 0"></p>
+      <table class="pw-table" id="pwTable"></table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Lo que significa</h3>
+    <p class="small" id="mdeText" style="margin:0"></p>
+  </div>
+  <p class="tiny">Prueba t para muestras relacionadas, bilateral, α = .05, calculada en tu navegador con la distribución t no central. n = 9: participantes de voleibol que previsiblemente seguirán en el rango de edad del STAIC al cierre. Un resultado no significativo con esta potencia no prueba que el programa no funcione.</p>
+</section>
+
+<!-- 6 · SUPUESTOS -->
+<section class="step" data-title="Supuestos">
+  <div class="eyebrow">6 · Antes de elegir la prueba</div>
+  <h2>¿Prueba t o Wilcoxon?</h2>
+  <p class="lead">La prueba t exige distribuciones aproximadamente normales. Shapiro-Wilk, escala por escala y por equipo. Las variables de las hipótesis están marcadas.</p>
+  <div class="card chart">
+    <svg id="norm" role="img" aria-label="Matriz de normalidad"></svg>
+    <div class="legend"><span><i class="sw" style="background:var(--surface-2);outline:1px solid var(--grid)"></i>Compatible con normalidad (p ≥ .05)</span><span><i class="sw" style="background:var(--bad)"></i>No normal (p &lt; .05)</span></div>
+  </div>
+  <div class="card detail" id="normCard" style="border-left-color:var(--ink)" aria-live="polite"></div>
+  <div class="card">
+    <h3>Consecuencia para el cierre</h3>
+    <p class="small" style="margin:0">Ansiedad en voleibol (W = .89, p = .157) y control de la ira en fútbol (W = .94, p = .472) cumplen el supuesto. Si las puntuaciones de cierre también lo cumplen, el contraste podrá usar la prueba t para muestras relacionadas; si no, la prueba de Wilcoxon. Las escalas con asimetría marcada (consumo de sustancias, conducta antisocial, problemas con los compañeros) habrían exigido pruebas no paramétricas.</p>
+  </div>
+</section>
+
+<footer class="foot">
+  <b>Ana María Bustamante Ortiz y Lina Marcela Ruiz Cadavid</b><br>
+  Semillero de Investigación Mathesis – TdeA · EIFD – PCJIC<br>
+  Línea base SENA (autoinforme), 2025-2. Solo datos grupales. Resultados del efecto pendientes de la medición de cierre (2027-1).
+</footer>
+</div></main>
+
+<nav class="nav" aria-label="Navegación entre capítulos">
+  <div class="wrap"><button class="prev" id="prev" type="button">← Anterior</button><div class="count" id="count" aria-live="polite"></div><button class="next" id="next" type="button">Siguiente →</button></div>
+</nav>
+
+<script>
+(function(){
+"use strict";
+/* ============ DATOS (extraídos de las tablas 5, 6, 7 y C1 del documento) ============ */
+var S=[{"k":"GLO","name":"Índice global de problemas","g":"Índices globales","v":{"m":62.0,"sd":10.1,"mdn":61.0,"pct":50,"kk":5,"n":10,"qb":0.033,"t":3.77,"gl":9,"q":0.018,"d":1.2,"sig":true,"sk":0.07,"ku":-1.73,"W":0.89,"pW":0.169,"lo":54.8,"hi":69.2},"f":{"m":51.8,"sd":9.5,"mdn":49.0,"pct":23,"kk":3,"n":13,"qb":0.682,"t":0.7,"gl":12,"q":0.853,"d":0.18,"sig":false,"sk":0.6,"ku":-0.85,"W":0.92,"pW":0.244,"lo":46.1,"hi":57.5}},{"k":"EMO","name":"Índice de problemas emocionales","g":"Índices globales","v":{"m":65.5,"sd":11.8,"mdn":63.0,"pct":60,"kk":6,"n":10,"qb":0.009,"t":4.16,"gl":9,"q":0.018,"d":1.55,"sig":true,"sk":0.46,"ku":-1.16,"W":0.93,"pW":0.43,"lo":57.1,"hi":73.9},"f":{"m":50.8,"sd":8.9,"mdn":49.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":0.31,"gl":12,"q":0.883,"d":0.08,"sig":false,"sk":0.72,"ku":-1.05,"W":0.86,"pW":0.044,"lo":45.4,"hi":56.2}},{"k":"CON","name":"Índice de problemas conductuales","g":"Índices globales","v":{"m":54.3,"sd":12.9,"mdn":53.0,"pct":10,"kk":1,"n":10,"qb":1.0,"t":1.05,"gl":9,"q":0.372,"d":0.43,"sig":false,"sk":2.49,"ku":7.25,"W":0.67,"pW":0.0009,"lo":45.1,"hi":63.5},"f":{"m":54.0,"sd":10.2,"mdn":50.0,"pct":38,"kk":5,"n":13,"qb":0.401,"t":1.41,"gl":12,"q":0.549,"d":0.4,"sig":false,"sk":0.68,"ku":-0.84,"W":0.89,"pW":0.105,"lo":47.8,"hi":60.2}},{"k":"EJE","name":"Índice de problemas en las funciones ejecutivas","g":"Índices globales","v":{"m":60.5,"sd":12.5,"mdn":58.0,"pct":50,"kk":5,"n":10,"qb":0.033,"t":2.66,"gl":9,"q":0.054,"d":1.05,"sig":false,"sk":0.01,"ku":-1.35,"W":0.9,"pW":0.226,"lo":51.6,"hi":69.4},"f":{"m":51.0,"sd":9.1,"mdn":52.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":0.4,"gl":12,"q":0.865,"d":0.1,"sig":false,"sk":-0.07,"ku":-1.71,"W":0.88,"pW":0.074,"lo":45.5,"hi":56.5}},{"k":"CTX","name":"Índice de problemas contextuales","g":"Índices globales","v":{"m":51.1,"sd":11.1,"mdn":51.5,"pct":20,"kk":2,"n":10,"qb":0.742,"t":0.31,"gl":9,"q":0.76,"d":0.11,"sig":false,"sk":0.67,"ku":0.18,"W":0.92,"pW":0.354,"lo":43.2,"hi":59.0},"f":{"m":49.9,"sd":9.9,"mdn":48.0,"pct":23,"kk":3,"n":13,"qb":0.682,"t":-0.03,"gl":12,"q":1.0,"d":-0.01,"sig":false,"sk":0.54,"ku":-0.57,"W":0.95,"pW":0.669,"lo":43.9,"hi":55.9}},{"k":"REC","name":"Índice de recursos personales","g":"Índices globales","v":{"m":43.3,"sd":12.1,"mdn":44.0,"pct":40,"kk":4,"n":10,"qb":0.102,"t":-1.75,"gl":9,"q":0.174,"d":-0.67,"sig":false,"sk":0.09,"ku":-0.88,"W":0.96,"pW":0.829,"lo":34.6,"hi":52.0},"f":{"m":56.2,"sd":8.0,"mdn":58.0,"pct":0,"kk":0,"n":13,"qb":0.472,"t":2.82,"gl":12,"q":0.151,"d":0.62,"sig":false,"sk":-0.28,"ku":-1.02,"W":0.95,"pW":0.609,"lo":51.4,"hi":61.0}},{"k":"DEP","name":"Depresión","g":"Problemas interiorizados","v":{"m":61.4,"sd":12.8,"mdn":60.0,"pct":60,"kk":6,"n":10,"qb":0.009,"t":2.82,"gl":9,"q":0.048,"d":1.14,"sig":true,"sk":-0.07,"ku":-1.05,"W":0.95,"pW":0.618,"lo":52.2,"hi":70.6},"f":{"m":49.3,"sd":6.7,"mdn":49.0,"pct":15,"kk":2,"n":13,"qb":1.0,"t":-0.37,"gl":12,"q":0.865,"d":-0.07,"sig":false,"sk":0.35,"ku":-0.7,"W":0.94,"pW":0.483,"lo":45.3,"hi":53.3}},{"k":"ANS","name":"Ansiedad","g":"Problemas interiorizados","v":{"m":60.1,"sd":11.3,"mdn":57.5,"pct":40,"kk":4,"n":10,"qb":0.102,"t":2.83,"gl":9,"q":0.048,"d":1.01,"sig":true,"sk":0.35,"ku":-1.67,"W":0.89,"pW":0.157,"lo":52.0,"hi":68.2},"f":{"m":47.0,"sd":5.5,"mdn":46.0,"pct":0,"kk":0,"n":13,"qb":0.472,"t":-1.96,"gl":12,"q":0.303,"d":-0.3,"sig":false,"sk":0.19,"ku":0.44,"W":0.97,"pW":0.904,"lo":43.7,"hi":50.3}},{"k":"ASC","name":"Ansiedad social","g":"Problemas interiorizados","v":{"m":65.5,"sd":12.8,"mdn":66.5,"pct":70,"kk":7,"n":10,"qb":0.002,"t":3.82,"gl":9,"q":0.018,"d":1.55,"sig":true,"sk":-0.18,"ku":-1.27,"W":0.93,"pW":0.458,"lo":56.3,"hi":74.7},"f":{"m":48.5,"sd":8.4,"mdn":48.0,"pct":15,"kk":2,"n":13,"qb":1.0,"t":-0.66,"gl":12,"q":0.853,"d":-0.15,"sig":false,"sk":0.42,"ku":-1.09,"W":0.93,"pW":0.359,"lo":43.4,"hi":53.6}},{"k":"SOM","name":"Quejas somáticas","g":"Problemas interiorizados","v":{"m":61.7,"sd":9.1,"mdn":61.0,"pct":50,"kk":5,"n":10,"qb":0.033,"t":4.07,"gl":9,"q":0.018,"d":1.17,"sig":true,"sk":0.28,"ku":-1.14,"W":0.93,"pW":0.462,"lo":55.2,"hi":68.2},"f":{"m":51.8,"sd":12.1,"mdn":50.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":0.53,"gl":12,"q":0.853,"d":0.18,"sig":false,"sk":0.28,"ku":-1.13,"W":0.93,"pW":0.349,"lo":44.5,"hi":59.1}},{"k":"PST","name":"Sintomatología postraumática","g":"Problemas interiorizados","v":{"m":60.9,"sd":8.9,"mdn":64.0,"pct":70,"kk":7,"n":10,"qb":0.002,"t":3.87,"gl":9,"q":0.018,"d":1.09,"sig":true,"sk":-0.87,"ku":-0.42,"W":0.89,"pW":0.17,"lo":54.5,"hi":67.3},"f":{"m":51.3,"sd":8.3,"mdn":46.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":0.57,"gl":12,"q":0.853,"d":0.13,"sig":false,"sk":0.57,"ku":-1.55,"W":0.84,"pW":0.02,"lo":46.3,"hi":56.3}},{"k":"OBS","name":"Obsesión-compulsión","g":"Problemas interiorizados","v":{"m":64.2,"sd":10.7,"mdn":61.0,"pct":56,"kk":5,"n":9,"qb":0.026,"t":3.99,"gl":8,"q":0.018,"d":1.42,"sig":true,"sk":0.76,"ku":-0.29,"W":0.9,"pW":0.241,"lo":56.0,"hi":72.4},"f":{"m":55.9,"sd":8.9,"mdn":54.0,"pct":15,"kk":2,"n":13,"qb":1.0,"t":2.41,"gl":12,"q":0.24,"d":0.59,"sig":false,"sk":0.96,"ku":1.3,"W":0.92,"pW":0.233,"lo":50.5,"hi":61.3}},{"k":"ATE","name":"Problemas de atención","g":"Problemas exteriorizados","v":{"m":53.4,"sd":10.0,"mdn":52.0,"pct":30,"kk":3,"n":10,"qb":0.28,"t":1.07,"gl":9,"q":0.372,"d":0.34,"sig":false,"sk":0.13,"ku":-1.05,"W":0.96,"pW":0.751,"lo":46.2,"hi":60.6},"f":{"m":47.9,"sd":6.7,"mdn":47.0,"pct":0,"kk":0,"n":13,"qb":0.472,"t":-1.11,"gl":12,"q":0.641,"d":-0.21,"sig":false,"sk":0.37,"ku":-1.39,"W":0.91,"pW":0.193,"lo":43.9,"hi":51.9}},{"k":"HIP","name":"Hiperactividad-impulsividad","g":"Problemas exteriorizados","v":{"m":56.6,"sd":9.8,"mdn":54.0,"pct":40,"kk":4,"n":10,"qb":0.102,"t":2.12,"gl":9,"q":0.121,"d":0.66,"sig":false,"sk":0.94,"ku":0.61,"W":0.91,"pW":0.303,"lo":49.6,"hi":63.6},"f":{"m":49.6,"sd":7.7,"mdn":50.0,"pct":8,"kk":1,"n":13,"qb":0.891,"t":-0.18,"gl":12,"q":0.95,"d":-0.04,"sig":false,"sk":0.07,"ku":-1.32,"W":0.91,"pW":0.187,"lo":44.9,"hi":54.3}},{"k":"IRA","name":"Problemas de control de la ira","g":"Problemas exteriorizados","v":{"m":56.2,"sd":11.7,"mdn":51.5,"pct":30,"kk":3,"n":10,"qb":0.28,"t":1.67,"gl":9,"q":0.178,"d":0.62,"sig":false,"sk":0.85,"ku":0.24,"W":0.92,"pW":0.348,"lo":47.8,"hi":64.6},"f":{"m":53.9,"sd":12.0,"mdn":57.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":1.18,"gl":12,"q":0.634,"d":0.39,"sig":false,"sk":0.19,"ku":-0.99,"W":0.94,"pW":0.472,"lo":46.6,"hi":61.2}},{"k":"AGR","name":"Agresión","g":"Problemas exteriorizados","v":{"m":55.8,"sd":11.6,"mdn":52.0,"pct":30,"kk":3,"n":10,"qb":0.28,"t":1.58,"gl":9,"q":0.196,"d":0.58,"sig":false,"sk":1.48,"ku":2.93,"W":0.87,"pW":0.099,"lo":47.5,"hi":64.1},"f":{"m":57.9,"sd":12.7,"mdn":55.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":2.26,"gl":12,"q":0.253,"d":0.79,"sig":false,"sk":0.66,"ku":-0.87,"W":0.89,"pW":0.113,"lo":50.2,"hi":65.6}},{"k":"DES","name":"Conducta desafiante","g":"Problemas exteriorizados","v":{"m":53.2,"sd":13.0,"mdn":51.0,"pct":10,"kk":1,"n":10,"qb":1.0,"t":0.78,"gl":9,"q":0.508,"d":0.32,"sig":false,"sk":1.98,"ku":4.9,"W":0.79,"pW":0.012,"lo":43.9,"hi":62.5},"f":{"m":46.4,"sd":6.1,"mdn":44.0,"pct":0,"kk":0,"n":13,"qb":0.472,"t":-2.13,"gl":12,"q":0.266,"d":-0.36,"sig":false,"sk":0.79,"ku":-0.26,"W":0.89,"pW":0.108,"lo":42.7,"hi":50.1}},{"k":"ANT","name":"Conducta antisocial","g":"Problemas exteriorizados","v":{"m":46.0,"sd":4.0,"mdn":44.0,"pct":0,"kk":0,"n":9,"qb":0.46,"t":-3.02,"gl":8,"q":0.048,"d":-0.4,"sig":true,"sk":1.39,"ku":0.83,"W":0.79,"pW":0.014,"lo":42.9,"hi":49.1},"f":{"m":55.3,"sd":13.6,"mdn":55.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":1.41,"gl":12,"q":0.549,"d":0.53,"sig":false,"sk":1.62,"ku":3.18,"W":0.84,"pW":0.02,"lo":47.1,"hi":63.5}},{"k":"SUS","name":"Consumo de sustancias","g":"Otros problemas","v":{"m":49.4,"sd":4.7,"mdn":48.0,"pct":11,"kk":1,"n":9,"qb":1.0,"t":-0.35,"gl":8,"q":0.76,"d":-0.06,"sig":false,"sk":2.14,"ku":5.13,"W":0.75,"pW":0.005,"lo":45.8,"hi":53.0},"f":{"m":51.5,"sd":8.4,"mdn":49.0,"pct":23,"kk":3,"n":13,"qb":0.682,"t":0.63,"gl":12,"q":0.853,"d":0.15,"sig":false,"sk":1.12,"ku":-0.2,"W":0.77,"pW":0.003,"lo":46.4,"hi":56.6}},{"k":"ESQ","name":"Esquizotipia","g":"Otros problemas","v":{"m":61.7,"sd":12.3,"mdn":58.0,"pct":44,"kk":4,"n":9,"qb":0.091,"t":2.85,"gl":8,"q":0.048,"d":1.17,"sig":true,"sk":0.17,"ku":-1.04,"W":0.94,"pW":0.548,"lo":52.2,"hi":71.2},"f":{"m":50.4,"sd":9.3,"mdn":48.0,"pct":15,"kk":2,"n":13,"qb":1.0,"t":0.15,"gl":12,"q":0.95,"d":0.04,"sig":false,"sk":0.89,"ku":-0.4,"W":0.85,"pW":0.026,"lo":44.8,"hi":56.0}},{"k":"ALI","name":"Problemas de la conducta alimentaria","g":"Otros problemas","v":{"m":60.6,"sd":9.9,"mdn":61.0,"pct":56,"kk":5,"n":9,"qb":0.026,"t":3.19,"gl":8,"q":0.041,"d":1.06,"sig":true,"sk":0.59,"ku":-0.6,"W":0.94,"pW":0.578,"lo":53.0,"hi":68.2},"f":{"m":55.9,"sd":7.6,"mdn":56.0,"pct":31,"kk":4,"n":13,"qb":0.401,"t":2.81,"gl":12,"q":0.151,"d":0.59,"sig":false,"sk":-0.08,"ku":-0.77,"W":0.97,"pW":0.833,"lo":51.3,"hi":60.5}},{"k":"FAM","name":"Problemas familiares","g":"Problemas contextuales","v":{"m":59.1,"sd":16.4,"mdn":60.0,"pct":60,"kk":6,"n":10,"qb":0.009,"t":1.75,"gl":9,"q":0.174,"d":0.91,"sig":false,"sk":0.84,"ku":0.58,"W":0.93,"pW":0.401,"lo":47.4,"hi":70.8},"f":{"m":48.8,"sd":8.6,"mdn":47.0,"pct":8,"kk":1,"n":13,"qb":0.891,"t":-0.48,"gl":12,"q":0.853,"d":-0.12,"sig":false,"sk":0.94,"ku":0.31,"W":0.9,"pW":0.129,"lo":43.6,"hi":54.0}},{"k":"ESC","name":"Problemas con la escuela","g":"Problemas contextuales","v":{"m":42.1,"sd":5.9,"mdn":40.0,"pct":0,"kk":0,"n":10,"qb":0.46,"t":-4.26,"gl":9,"q":0.018,"d":-0.79,"sig":true,"sk":1.06,"ku":0.4,"W":0.89,"pW":0.157,"lo":37.9,"hi":46.3},"f":{"m":50.0,"sd":9.5,"mdn":48.0,"pct":8,"kk":1,"n":13,"qb":0.891,"t":0.0,"gl":12,"q":1.0,"d":0.0,"sig":false,"sk":0.26,"ku":-0.14,"W":0.95,"pW":0.668,"lo":44.3,"hi":55.7}},{"k":"COM","name":"Problemas con los compañeros","g":"Problemas contextuales","v":{"m":51.6,"sd":9.2,"mdn":48.0,"pct":20,"kk":2,"n":10,"qb":0.742,"t":0.55,"gl":9,"q":0.642,"d":0.16,"sig":false,"sk":1.17,"ku":-0.14,"W":0.79,"pW":0.01,"lo":45.0,"hi":58.2},"f":{"m":51.4,"sd":10.6,"mdn":47.0,"pct":15,"kk":2,"n":13,"qb":1.0,"t":0.47,"gl":12,"q":0.853,"d":0.14,"sig":false,"sk":2.2,"ku":4.74,"W":0.65,"pW":0.0009,"lo":45.0,"hi":57.8}},{"k":"REG","name":"Problemas de regulación emocional","g":"Vulnerabilidades","v":{"m":66.2,"sd":13.9,"mdn":69.5,"pct":70,"kk":7,"n":10,"qb":0.002,"t":3.68,"gl":9,"q":0.019,"d":1.62,"sig":true,"sk":-0.5,"ku":-0.35,"W":0.94,"pW":0.598,"lo":56.3,"hi":76.1},"f":{"m":54.2,"sd":11.5,"mdn":54.0,"pct":38,"kk":5,"n":13,"qb":0.401,"t":1.33,"gl":12,"q":0.549,"d":0.42,"sig":false,"sk":0.37,"ku":-1.43,"W":0.88,"pW":0.083,"lo":47.3,"hi":61.1}},{"k":"BUS","name":"Búsqueda de sensaciones","g":"Vulnerabilidades","v":{"m":46.4,"sd":5.9,"mdn":47.0,"pct":0,"kk":0,"n":9,"qb":0.46,"t":-1.8,"gl":8,"q":0.174,"d":-0.36,"sig":false,"sk":-0.83,"ku":-0.25,"W":0.86,"pW":0.088,"lo":41.9,"hi":50.9},"f":{"m":53.2,"sd":8.4,"mdn":53.0,"pct":23,"kk":3,"n":13,"qb":0.682,"t":1.39,"gl":12,"q":0.549,"d":0.32,"sig":false,"sk":-0.02,"ku":-0.71,"W":0.95,"pW":0.557,"lo":48.1,"hi":58.3}},{"k":"AUT","name":"Autoestima","g":"Recursos personales","v":{"m":43.4,"sd":11.6,"mdn":42.5,"pct":40,"kk":4,"n":10,"qb":0.102,"t":-1.8,"gl":9,"q":0.174,"d":-0.66,"sig":false,"sk":0.36,"ku":-1.13,"W":0.94,"pW":0.545,"lo":35.1,"hi":51.7},"f":{"m":58.0,"sd":6.9,"mdn":59.0,"pct":0,"kk":0,"n":13,"qb":0.472,"t":4.17,"gl":12,"q":0.038,"d":0.8,"sig":true,"sk":-0.92,"ku":0.08,"W":0.86,"pW":0.041,"lo":53.8,"hi":62.2}},{"k":"SOC","name":"Integración y competencia social","g":"Recursos personales","v":{"m":45.1,"sd":10.6,"mdn":44.5,"pct":30,"kk":3,"n":10,"qb":0.28,"t":-1.46,"gl":9,"q":0.226,"d":-0.49,"sig":false,"sk":0.07,"ku":-0.94,"W":0.96,"pW":0.757,"lo":37.5,"hi":52.7},"f":{"m":52.4,"sd":8.1,"mdn":53.0,"pct":8,"kk":1,"n":13,"qb":0.891,"t":1.06,"gl":12,"q":0.641,"d":0.24,"sig":false,"sk":0.01,"ku":-0.59,"W":0.97,"pW":0.877,"lo":47.5,"hi":57.3}},{"k":"CNC","name":"Conciencia de los problemas","g":"Recursos personales","v":{"m":57.6,"sd":13.3,"mdn":52.0,"pct":44,"t":1.71,"gl":8,"q":0.178,"d":0.76,"sig":false,"sk":0.66,"ku":0.55,"W":0.95,"pW":0.677,"n":9,"lo":47.4,"hi":67.8},"f":{"m":51.2,"sd":8.0,"mdn":51.0,"pct":15,"t":0.52,"gl":12,"q":0.853,"d":0.12,"sig":false,"sk":-0.34,"ku":-0.82,"W":0.94,"pW":0.43,"n":13,"lo":46.4,"hi":56.0}}];
+var SHORT={GLO:"Índice global",EMO:"Problemas emocionales",CON:"Problemas conductuales",EJE:"Funciones ejecutivas",CTX:"Problemas contextuales",REC:"Recursos personales",
+DEP:"Depresión",ANS:"Ansiedad",ASC:"Ansiedad social",SOM:"Quejas somáticas",PST:"Sint. postraumática",OBS:"Obsesión-compulsión",
+ATE:"Atención",HIP:"Hiperactividad",IRA:"Control de la ira",AGR:"Agresión",DES:"Conducta desafiante",ANT:"Conducta antisocial",
+SUS:"Consumo de sustancias",ESQ:"Esquizotipia",ALI:"Conducta alimentaria",FAM:"Familiares",ESC:"Escuela",COM:"Compañeros",
+REG:"Regulación emocional",BUS:"Búsq. de sensaciones",AUT:"Autoestima",SOC:"Integración social",CNC:"Conciencia de problemas"};
+var GOOD={REC:1,AUT:1,SOC:1}, NEUTRAL={CNC:1};
+// IC publicados en la Tabla 8 para las variables de las hipótesis
+S.forEach(function(s){if(s.k==="ANS"){s.v.lo=52.0;s.v.hi=68.2} if(s.k==="IRA"){s.f.lo=46.7;s.f.hi=61.2}});
+var BYK={};S.forEach(function(s){BYK[s.k]=s});
+var TEAM={v:{name:"Voleibol",n:10},f:{name:"Fútbol Sub-16",n:13}};
+var CORR=[["REG","ANS",.72,".44",".87","< .001"],["REG","EMO",.69,".38",".86","< .001"],["REG","DEP",.73,".46",".88","< .001"],["ANS","ASC",.70,".40",".86","< .001"],
+["AUT","DEP",-.71,"−.87","−.42","< .001"],["AUT","EMO",-.65,"−.84","−.32","< .001"],["AUT","REG",-.48,"−.74","−.08",".022"],["FAM","EMO",.50,".11",".76",".015"],
+["SOC","ASC",-.46,"−.73","−.05",".029"],["IRA","AGR",.52,".13",".77",".012"],["REG","AGR",.33,"−.10",".65",".128"]];
+var CL=[{id:"C1",name:"Sin dificultades relevantes",n:12,v:3,f:9,c:"--c1"},{id:"C2",name:"Perfil interiorizado",n:5,v:5,f:0,c:"--c2"},{id:"C3",name:"Perfil mixto-exteriorizado",n:6,v:2,f:4,c:"--c3"}];
+var CLT=[["GLO",47.5,67.4,64.5],["EMO",47.4,75.2,61.7],["CON",49.8,51.0,65.5],["DEP",45.8,71.4,58.0],["ANS",46.6,68.2,52.0],["ASC",46.8,76.0,57.3],["SOM",47.7,66.8,64.0],
+["PST",47.1,66.0,63.5],["IRA",49.3,56.6,64.7],["AGR",54.6,49.6,68.0],["FAM",46.6,61.0,60.3],["COM",46.9,51.8,60.3],["REG",50.2,76.0,64.2],["AUT",58.8,36.2,50.3],["SOC",54.7,43.8,42.8]];
+var REGR={b:.68,se:.13,tc:2.0796,mx:59.42,my:57.19,r2:.56};
+
+/* ============ UTILIDADES ============ */
+var NS="http://www.w3.org/2000/svg";
+function el(tag,a,p){var e=document.createElementNS(NS,tag);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function txt(tag,a,p,t){var e=el(tag,a,p);e.textContent=t;return e}
+function f1(x){return x.toFixed(1)} function f2(x){return x.toFixed(2)}
+function fq(q){return q<.001?"< .001":q>=1?"1.000":q.toFixed(3).replace(/^0/,"")}
+function sgn(x){return (x<0?"−":"")+Math.abs(x).toFixed(2)}
+function mag(d){var a=Math.abs(d);return a<.2?"trivial":a<.5?"pequeño":a<.8?"mediano":"grande"}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function tween(dur,fn,done){if(reduce){fn(1);done&&done();return}var s=null;function fr(t){if(!s)s=t;var k=Math.min(1,(t-s)/dur),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;fn(e);if(k<1)requestAnimationFrame(fr);else done&&done()}requestAnimationFrame(fr)}
+function lerp(a,b,e){return a+(b-a)*e}
+var state={team:"v",step:0,scale:"REG",sort:"dom",prevK:"REG",cl:null};
+function unfav(s,t){return NEUTRAL[s.k]?0:(GOOD[s.k]?-1:1)*s[t].d}
+
+/* ============ 0 · HUELLA ============ */
+var tiles=document.getElementById("tiles");
+function buildTiles(){
+  var g=null;tiles.innerHTML="";
+  S.forEach(function(s){
+    if(s.g!==g){g=s.g;var h=document.createElement("div");h.className="gh";h.textContent=g;tiles.appendChild(h)}
+    var b=document.createElement("button");b.type="button";b.className="tile";b.dataset.k=s.k;
+    b.innerHTML="<b>"+s.k+"</b><span></span>";b.setAttribute("aria-label",s.name);
+    b.addEventListener("click",function(){state.scale=s.k;go(1);renderDetail();forestSelect()});
+    tiles.appendChild(b);
+  });
+}
+function mix(c1,c2,k){var a=hex(c1),b=hex(c2);return "rgb("+[0,1,2].map(function(i){return Math.round(a[i]+(b[i]-a[i])*k)}).join(",")+")"}
+function hex(c){c=c.replace("#","");if(c.length===3)c=c.split("").map(function(x){return x+x}).join("");return [0,2,4].map(function(i){return parseInt(c.substr(i,2),16)})}
+function renderTiles(){
+  var base=css("--surface-2"),bad=css("--bad"),good=css("--good"),ink=css("--ink");
+  [].forEach.call(tiles.querySelectorAll(".tile"),function(b){
+    var s=BYK[b.dataset.k],r=s[state.team],u=unfav(s,state.team),k=Math.min(1,Math.abs(u)/1.6);
+    var bg=NEUTRAL[s.k]?base:mix(base,u>0?bad:good,k);
+    b.style.backgroundColor=bg;b.style.color=k>.55?"#fff":ink;
+    b.classList.toggle("sig",r.sig);
+    b.querySelector("span").textContent="d "+sgn(r.d);
+  });
+}
+var counted=false;
+function countUp(){if(counted)return;counted=true;[].forEach.call(document.querySelectorAll("[data-count]"),function(e){var to=+e.dataset.count;tween(1100,function(k){e.textContent=Math.round(to*k)})})}
+
+/* ============ 1 · BOSQUE ============ */
+var FX0=152,FX1=350,RH=22,GH=24,TOP=30;
+function fx(T){return FX0+(Math.max(30,Math.min(80,T))-30)/50*(FX1-FX0)}
+var forest=document.getElementById("forest"),FR={},fH=0,fLayer,fSel;
+function forestLayout(){
+  var y=TOP,pos={},heads=[];
+  if(state.sort==="dom"){var g=null;S.forEach(function(s){if(s.g!==g){g=s.g;heads.push([g,y]);y+=GH}pos[s.k]=y;y+=RH})}
+  else{S.slice().sort(function(a,b){return unfav(b,state.team)-unfav(a,state.team)}).forEach(function(s){pos[s.k]=y;y+=RH})}
+  return {pos:pos,heads:heads,h:y+24};
+}
+function buildForest(){
+  var L=forestLayout();fH=L.h;forest.setAttribute("viewBox","0 0 360 "+fH);
+  forest.innerHTML="";
+  var bg=el("g",{},forest);
+  el("rect",{x:fx(48),y:TOP-8,width:fx(52)-fx(48),height:fH-TOP-16,fill:"var(--surface-2)"},bg);
+  [42,45,55,58].forEach(function(T){el("line",{x1:fx(T),x2:fx(T),y1:TOP-8,y2:fH-24,stroke:"var(--grid)","stroke-dasharray":"3 4"},bg)});
+  el("line",{x1:fx(50),x2:fx(50),y1:TOP-8,y2:fH-24,stroke:"var(--ink-2)","stroke-width":1.4},bg);
+  for(var T=30;T<=80;T+=10){txt("text",{x:fx(T),y:fH-8,"text-anchor":"middle","class":"ax-t"},bg,"T "+T);txt("text",{x:fx(T),y:12,"text-anchor":"middle","class":"ax-t"},bg,"d "+sgn((T-50)/10).replace(".00",""))}
+  
+  fLayer=el("g",{},forest);
+  fSel=el("rect",{x:0,y:0,width:360,height:RH,"class":"sel-bg",rx:4},fLayer);
+  state.heads=el("g",{},forest);
+  S.forEach(function(s){
+    var g=el("g",{},fLayer);
+    var hit=el("rect",{x:0,y:-RH/2,width:360,height:RH,"class":"hit"},g);
+    var t=el("text",{x:4,y:4,"class":"lab"},g);
+    var a=el("tspan",{"class":"c"},t);a.textContent=s.k+" ";var b=el("tspan",{},t);b.textContent=SHORT[s.k];
+    if(GOOD[s.k]){var u=el("tspan",{fill:"var(--good)","font-weight":"700"},t);u.textContent=" ↑"}
+    var ci=el("line",{"class":"ci",y1:0,y2:0},g);
+    var pt=el("circle",{r:4.6,cy:0,"class":"pt"},g);
+    g.addEventListener("click",function(){state.scale=s.k;renderDetail();forestSelect()});
+    FR[s.k]={g:g,ci:ci,pt:pt,y:L.pos[s.k],m:s[state.team].m,lo:s[state.team].lo,hi:s[state.team].hi};
+  });
+  drawHeads(L);forestDraw(1,null);forestSelect();
+}
+function drawHeads(L){state.heads.innerHTML="";L.heads.forEach(function(h){txt("text",{x:4,y:h[1]+4,"class":"grp"},state.heads,h[0])})}
+function forestDraw(e,from){
+  S.forEach(function(s){var r=FR[s.k],d=s[state.team],o=from?from[s.k]:r;
+    var y=lerp(o.y,r.ty!=null?r.ty:r.y,e),m=lerp(o.m,d.m,e),lo=lerp(o.lo,d.lo,e),hi=lerp(o.hi,d.hi,e);
+    r.g.setAttribute("transform","translate(0,"+y.toFixed(1)+")");
+    r.ci.setAttribute("x1",fx(lo));r.ci.setAttribute("x2",fx(hi));r.pt.setAttribute("cx",fx(m));
+    r.pt.setAttribute("class","pt "+(d.sig?"sig":"ns"));
+    r.cy=y;r.cm=m;r.clo=lo;r.chi=hi;
+  });
+  forestSelect();
+}
+function forestAnimate(){
+  var L=forestLayout(),from={};
+  S.forEach(function(s){var r=FR[s.k];from[s.k]={y:r.cy,m:r.cm,lo:r.clo,hi:r.chi};r.ty=L.pos[s.k]});
+  var newH=L.h;if(newH!==fH){fH=newH;buildForest();return}
+  state.heads.style.opacity=0;
+  tween(600,function(e){forestDraw(e,from)},function(){S.forEach(function(s){FR[s.k].y=FR[s.k].ty;FR[s.k].ty=null});drawHeads(L);state.heads.style.opacity=1});
+}
+function forestSelect(){var r=FR[state.scale];if(r&&fSel)fSel.setAttribute("y",(r.cy-RH/2).toFixed(1))}
+[].forEach.call(document.querySelectorAll("[data-sort]"),function(b){b.addEventListener("click",function(){
+  state.sort=b.dataset.sort;[].forEach.call(document.querySelectorAll("[data-sort]"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
+  var L=forestLayout();fH=L.h;forest.setAttribute("viewBox","0 0 360 "+fH);
+  // reconstruye fondo con la nueva altura y anima filas
+  var keep={};S.forEach(function(s){var r=FR[s.k];keep[s.k]={y:r.cy,m:r.cm,lo:r.clo,hi:r.chi}});
+  buildForest();S.forEach(function(s){FR[s.k].ty=FR[s.k].y});
+  tween(650,function(e){forestDraw(e,keep)},function(){S.forEach(function(s){FR[s.k].ty=null})});
+})});
+function renderDetail(){
+  var s=BYK[state.scale],t=state.team,r=s[t],dir=NEUTRAL[s.k]?"Un valor alto no indica un problema.":GOOD[s.k]?"Recurso personal: más alto es mejor.":"Más alto = más dificultad.";
+  var interp=r.sig?(unfav(s,t)>0?"Difiere de la población en sentido desfavorable.":"Difiere de la población en sentido favorable."):"No difiere de la población tras el ajuste.";
+  var elev=r.kk!=null?'<div class="kpi"><div class="k">Elevados</div><div class="v">'+r.kk+"/"+r.n+'</div><div class="s">'+r.pct+"% · binomial q "+fq(r.qb)+"</div></div>":'<div class="kpi"><div class="k">Elevados</div><div class="v">'+r.pct+'%</div><div class="s">sin prueba binomial</div></div>';
+  document.getElementById("detail").innerHTML='<div class="ttl"><h3>'+s.name+'</h3><span class="tag">'+s.g+'</span></div>'+
+   '<div class="kpis"><div class="kpi"><div class="k">Media (DE)</div><div class="v">'+f1(r.m)+'</div><div class="s">DE '+f1(r.sd)+" · Mdn "+f1(r.mdn)+'</div></div>'+
+   '<div class="kpi"><div class="k">IC 95 %</div><div class="v" style="font-size:17px">'+f1(r.lo)+"–"+f1(r.hi)+'</div><div class="s">n = '+r.n+'</div></div>'+
+   '<div class="kpi"><div class="k">d de Cohen</div><div class="v">'+sgn(r.d)+'</div><div class="s mag">'+mag(r.d)+'</div></div>'+
+   '<div class="kpi"><div class="k">t ('+r.gl+')</div><div class="v">'+sgn(r.t)+'</div><div class="s">q = '+fq(r.q)+(r.sig?" *":"")+'</div></div>'+elev+
+   '<div class="kpi"><div class="k">Shapiro-Wilk</div><div class="v">'+f2(r.W).replace(/^0/,"")+'</div><div class="s">p = '+fq(r.pW)+'</div></div></div>'+
+   '<p class="small" style="margin:10px 0 0"><b>'+TEAM[t].name+":</b> "+interp+' <span class="muted">'+dir+"</span></p>";
+}
+
+/* ============ 2 · PREVALENCIA ============ */
+var prev=document.getElementById("prev"),PR={},PH=0,PX0=160,PX1=344;
+function px(p){return PX0+p/100*(PX1-PX0)}
+var PS=S.filter(function(s){return !NEUTRAL[s.k]});
+function prevOrder(){var o={},y=26;PS.slice().sort(function(a,b){return b[state.team].pct-a[state.team].pct||a.k.localeCompare(b.k)}).forEach(function(s){o[s.k]=y;y+=20});return o}
+function buildPrev(){
+  var o=prevOrder();PH=26+PS.length*20+26;prev.setAttribute("viewBox","0 0 360 "+PH);prev.innerHTML="";
+  [0,25,50,75,100].forEach(function(p){el("line",{x1:px(p),x2:px(p),y1:16,y2:PH-22,"class":"ax-l"},prev);txt("text",{x:px(p),y:PH-8,"text-anchor":"middle","class":"ax-t"},prev,p+"%")});
+  el("line",{x1:px(15.9),x2:px(15.9),y1:12,y2:PH-22,stroke:"var(--ink)","stroke-width":1.6,"stroke-dasharray":"5 4"},prev);
+  txt("text",{x:px(15.9)+4,y:11,"class":"ax-t","font-weight":"700",fill:"var(--ink-2)"},prev,"15.9 % esperado");
+  var sel=el("rect",{x:0,y:0,width:360,height:20,rx:4,"class":"sel-bg"},prev);PR._sel=sel;
+  PS.forEach(function(s){
+    var g=el("g",{},prev);el("rect",{x:0,y:-10,width:360,height:20,"class":"hit"},g);
+    var t=el("text",{x:4,y:4,"class":"lab"},g);var a=el("tspan",{"class":"c"},t);a.textContent=s.k+" ";var b=el("tspan",{},t);b.textContent=SHORT[s.k];
+    var seg=el("line",{y1:0,y2:0,stroke:"var(--team)","stroke-width":2,opacity:.55},g);
+    var c=el("circle",{r:5,cy:0,"class":"pt"},g);
+    g.addEventListener("click",function(){state.prevK=s.k;renderWaffle();prevSel()});
+    PR[s.k]={g:g,seg:seg,c:c,y:o[s.k],p:s[state.team].pct};
+  });
+  prevDraw(1,null);
+}
+function prevDraw(e,from){PS.forEach(function(s){var r=PR[s.k],d=s[state.team],o=from?from[s.k]:{y:r.y,p:d.pct};var y=lerp(o.y,r.ty!=null?r.ty:r.y,e),p=lerp(o.p,d.pct,e);
+  r.g.setAttribute("transform","translate(0,"+y.toFixed(1)+")");r.seg.setAttribute("x1",px(15.9));r.seg.setAttribute("x2",px(p));r.c.setAttribute("cx",px(p));
+  r.c.setAttribute("class","pt "+(d.qb<.05?"sig":"ns"));r.cy=y;r.cp=p});prevSel()}
+function prevAnimate(){var o=prevOrder(),from={};PS.forEach(function(s){var r=PR[s.k];from[s.k]={y:r.cy,p:r.cp};r.ty=o[s.k]});
+  tween(650,function(e){prevDraw(e,from)},function(){PS.forEach(function(s){PR[s.k].y=PR[s.k].ty;PR[s.k].ty=null})})}
+function prevSel(){var r=PR[state.prevK];if(r)PR._sel.setAttribute("y",(r.cy-10).toFixed(1))}
+function renderWaffle(){
+  var s=BYK[state.prevK],r=s[state.team],exp=r.n*.159,ratio=r.pct/15.9;
+  var dots="";for(var i=0;i<r.n;i++)dots+='<i class="'+(i<r.kk?"on":"")+(i<Math.round(exp)?" exp":"")+'"></i>';
+  var crit=GOOD[s.k]?"T ≤ 40":"T ≥ 60";
+  document.getElementById("waffleCard").innerHTML='<div class="ttl"><h3>'+s.name+'</h3></div>'+
+   '<p class="readout" style="margin:0"><b>'+r.kk+" de "+r.n+"</b> deportistas con "+crit+'. Se esperarían <b>≈ '+exp.toFixed(1).replace(".",".")+"</b>.</p>"+
+   '<div class="waffle" aria-hidden="true">'+dots+'</div>'+
+   '<p class="tiny" style="margin:4px 0 0">Círculo relleno = participante elevado · anillo exterior = cuántos se esperarían en la población.</p>'+
+   '<p class="small" style="margin:8px 0 0">'+(r.kk===0?"Ningún participante elevado.":"Observado: "+(ratio>=1?ratio.toFixed(1)+" veces lo esperado.":"por debajo de lo esperado."))+' Prueba binomial: q = '+fq(r.qb)+(r.qb<.05?" (significativa).":" (no significativa).")+"</p>";
+}
+
+/* ============ 3 · RED ============ */
+var NODES={REG:[175,160],ANS:[100,68],DEP:[235,58],EMO:[305,165],ASC:[45,150],AUT:[245,288],FAM:[330,62],SOC:[45,250],AGR:[125,285],IRA:[48,310]};
+var LPOS={"AUT-DEP":.3,"AUT-EMO":.45,"REG-EMO":.42};
+var net=document.getElementById("net"),EDG=[],NODE={};
+function buildNet(){
+  net.innerHTML="";var eg=el("g",{},net),ng=el("g",{},net);
+  CORR.forEach(function(c,i){
+    var a=NODES[c[0]],b=NODES[c[1]],sig=c[5]!==".128",col=!sig?"var(--neutral)":c[2]>0?"var(--bad)":"var(--good)";
+    var w=Math.max(1.6,(Math.abs(c[2])-.2)*14);
+    var g=el("g",{style:"cursor:pointer"},eg);
+    var ln=el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:col,"stroke-width":w,"stroke-linecap":"round",opacity:.75,"stroke-dasharray":sig?"":"5 5"},g);
+    el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:"transparent","stroke-width":22},g);
+    var fr=LPOS[c[0]+"-"+c[1]]||.5,mx=a[0]+(b[0]-a[0])*fr,my=a[1]+(b[1]-a[1])*fr;
+    var lb=txt("text",{x:mx,y:my+4,"text-anchor":"middle","font-size":"11.5","font-weight":"700",fill:"var(--ink)","paint-order":"stroke",stroke:"var(--surface)","stroke-width":"4px"},g,(c[2]<0?"−":"")+Math.abs(c[2]).toFixed(2).replace(/^0/,""));
+    g.addEventListener("click",function(){netEdge(i)});
+    EDG.push({g:g,ln:ln,c:c,w:w});
+  });
+  Object.keys(NODES).forEach(function(k){
+    var p=NODES[k],g=el("g",{style:"cursor:pointer",transform:"translate("+p[0]+","+p[1]+")"},ng);
+    var deg=CORR.filter(function(c){return c[0]===k||c[1]===k}).length,r=k==="REG"?27:19;
+    el("circle",{r:r,fill:"var(--surface)",stroke:"var(--ink)","stroke-width":k==="REG"?2.6:1.6},g);
+    txt("text",{y:4,"text-anchor":"middle","font-size":k==="REG"?"14":"12.5","font-weight":"700",fill:"var(--ink)"},g,k);
+    g.addEventListener("click",function(){netNode(k)});NODE[k]=g;
+  });
+  netNode("REG");
+}
+function netEdge(i){
+  EDG.forEach(function(e,j){e.ln.setAttribute("opacity",j===i?1:.18)});
+  var c=CORR[i],a=BYK[c[0]].name,b=BYK[c[1]].name,s=c[5]!==".128";
+  document.getElementById("netCard").innerHTML='<div class="ttl"><h3>'+a+" · "+b+'</h3></div>'+
+   '<div class="kpis"><div class="kpi"><div class="k">ρ de Spearman</div><div class="v">'+(c[2]<0?"−":"")+Math.abs(c[2]).toFixed(2).replace(/^0/,"")+'</div></div><div class="kpi"><div class="k">IC 95 %</div><div class="v" style="font-size:17px">['+c[3]+", "+c[4]+']</div></div><div class="kpi"><div class="k">p</div><div class="v" style="font-size:17px">'+c[5]+'</div></div></div>'+
+   '<p class="small" style="margin:10px 0 0">'+(s?(c[2]>0?"Quienes puntúan más alto en una tienden a puntuar más alto en la otra.":"Quienes puntúan más alto en una tienden a puntuar más bajo en la otra."):"El intervalo incluye el 0: no hay evidencia suficiente de relación.")+"</p>";
+}
+function netNode(k){
+  var n=0;EDG.forEach(function(e){var on=e.c[0]===k||e.c[1]===k;if(on)n++;e.ln.setAttribute("opacity",on?1:.15)});
+  var list=CORR.filter(function(c){return c[0]===k||c[1]===k}).map(function(c){var o=c[0]===k?c[1]:c[0];return "<li>"+BYK[o].name+": ρ = "+(c[2]<0?"−":"")+Math.abs(c[2]).toFixed(2).replace(/^0/,"")+(c[5]===".128"?" (n. s.)":"")+"</li>"}).join("");
+  document.getElementById("netCard").innerHTML='<div class="ttl"><h3>'+BYK[k].name+'</h3><span class="tag">'+n+(n===1?" relación":" relaciones")+'</span></div><ul class="small" style="margin:0;padding-left:20px">'+list+"</ul>"+
+   (k==="REG"?'<p class="small" style="margin:8px 0 0">Es la escala con más conexiones fuertes: un cambio en ella podría repercutir en varias áreas a la vez.</p>':"");
+}
+// Regresión
+var regSvg=document.getElementById("reg"),RX0=46,RX1=346,RY0=250,RY1=14;
+function rx(v){return RX0+(v-35)/50*(RX1-RX0)} function ry(v){return RY0-(v-35)/50*(RY0-RY1)}
+var regDot,regGuideX,regGuideY,regLab;
+function yhat(x,b){return REGR.my+(b==null?REGR.b:b)*(x-REGR.mx)}
+function buildReg(){
+  regSvg.innerHTML="";
+  for(var v=40;v<=80;v+=10){el("line",{x1:rx(v),x2:rx(v),y1:RY1,y2:RY0,"class":"ax-l"},regSvg);el("line",{x1:RX0,x2:RX1,y1:ry(v),y2:ry(v),"class":"ax-l"},regSvg);
+    txt("text",{x:rx(v),y:RY0+16,"text-anchor":"middle","class":"ax-t"},regSvg,v);txt("text",{x:RX0-6,y:ry(v)+4,"text-anchor":"end","class":"ax-t"},regSvg,v)}
+  el("rect",{x:rx(60),y:RY1,width:rx(70)-rx(60),height:RY0-RY1,fill:"var(--risk)"},regSvg);
+  el("rect",{x:rx(70),y:RY1,width:RX1-rx(70),height:RY0-RY1,fill:"var(--clin)"},regSvg);
+  txt("text",{x:(RX0+RX1)/2,y:RY0+33,"text-anchor":"middle","class":"ax-t","font-weight":"700"},regSvg,"Problemas de regulación emocional (T)");
+  txt("text",{x:-(RY0+RY1)/2,y:12,transform:"rotate(-90)","text-anchor":"middle","class":"ax-t","font-weight":"700"},regSvg,"Índice de problemas emocionales (T)");
+  var lo=REGR.b-REGR.tc*REGR.se,hi=REGR.b+REGR.tc*REGR.se,xa=40,xb=82;
+  var d="M"+rx(xa)+" "+ry(yhat(xa,hi))+"L"+rx(xb)+" "+ry(yhat(xb,hi))+"L"+rx(xb)+" "+ry(yhat(xb,lo))+"L"+rx(xa)+" "+ry(yhat(xa,lo))+"Z";
+  el("path",{d:d,fill:"var(--bad)",opacity:.14},regSvg);
+  var line=el("line",{x1:rx(xa),y1:ry(yhat(xa)),x2:rx(xb),y2:ry(yhat(xb)),stroke:"var(--bad)","stroke-width":3,"stroke-linecap":"round"},regSvg);
+  if(!reduce){var L=line.getTotalLength?Math.hypot(rx(xb)-rx(xa),ry(yhat(xb))-ry(yhat(xa))):0;line.style.strokeDasharray=L;line.style.strokeDashoffset=L;line.style.transition="stroke-dashoffset 1.2s ease";state.regLine=line}
+  el("circle",{cx:rx(REGR.mx),cy:ry(REGR.my),r:4,fill:"var(--ink)"},regSvg);
+  txt("text",{x:rx(REGR.mx)+7,y:ry(REGR.my)+16,"class":"ax-t"},regSvg,"medias");
+  regGuideX=el("line",{stroke:"var(--ink)","stroke-dasharray":"3 3"},regSvg);regGuideY=el("line",{stroke:"var(--ink)","stroke-dasharray":"3 3"},regSvg);
+  regDot=el("circle",{r:7,fill:"var(--bad)",stroke:"var(--surface)","stroke-width":2.5},regSvg);
+  // donut R2
+  var cx=RX0+46,cy=RY1+40,R=26,C=2*Math.PI*R;
+  el("circle",{cx:cx,cy:cy,r:R,fill:"var(--surface)",stroke:"var(--surface-2)","stroke-width":10},regSvg);
+  var arc=el("circle",{cx:cx,cy:cy,r:R,fill:"none",stroke:"var(--bad)","stroke-width":10,"stroke-dasharray":(C*REGR.r2)+" "+C,transform:"rotate(-90 "+cx+" "+cy+")"},regSvg);
+  txt("text",{x:cx,y:cy+5,"text-anchor":"middle","font-size":"14","font-weight":"700",fill:"var(--ink)"},regSvg,"R² .56");
+  regUpdate();
+}
+function regUpdate(){
+  var x=+document.getElementById("regX").value,y=yhat(x),lo=yhat(x,REGR.b-REGR.tc*REGR.se),hi=yhat(x,REGR.b+REGR.tc*REGR.se);
+  regDot.setAttribute("cx",rx(x));regDot.setAttribute("cy",ry(y));
+  regGuideX.setAttribute("x1",rx(x));regGuideX.setAttribute("x2",rx(x));regGuideX.setAttribute("y1",RY0);regGuideX.setAttribute("y2",ry(y));
+  regGuideY.setAttribute("x1",RX0);regGuideY.setAttribute("x2",rx(x));regGuideY.setAttribute("y1",ry(y));regGuideY.setAttribute("y2",ry(y));
+  var dx=x-REGR.mx;
+  document.getElementById("regOut").innerHTML="Con regulación emocional en <b>T "+x+"</b>, el modelo espera un índice emocional de <b>T "+f1(y)+"</b>"+(Math.abs(dx)>3?' <span class="muted" style="font-size:15px">(entre '+f1(Math.min(lo,hi))+" y "+f1(Math.max(lo,hi))+" según la pendiente)</span>":"")+".";
+}
+document.getElementById("regX").addEventListener("input",regUpdate);
+
+/* ============ 4 · PERFILES ============ */
+var clus=document.getElementById("clus"),CX0=152,CX1=350;
+function cx(T){return CX0+(T-30)/50*(CX1-CX0)}
+var CLG=[];
+function buildClus(){
+  var top=24,rh=24,H=top+CLT.length*rh+24;clus.setAttribute("viewBox","0 0 360 "+H);clus.innerHTML="";
+  el("rect",{x:cx(60),y:top-12,width:cx(70)-cx(60),height:H-top-24+12,fill:"var(--risk)"},clus);
+  el("rect",{x:cx(70),y:top-12,width:cx(80)-cx(70),height:H-top-24+12,fill:"var(--clin)"},clus);
+  for(var T=30;T<=80;T+=10){el("line",{x1:cx(T),x2:cx(T),y1:top-12,y2:H-24,"class":"ax-l"},clus);txt("text",{x:cx(T),y:H-8,"text-anchor":"middle","class":"ax-t"},clus,"T "+T)}
+  el("line",{x1:cx(50),x2:cx(50),y1:top-12,y2:H-24,stroke:"var(--ink-2)","stroke-dasharray":"4 4","stroke-width":1.4},clus);
+  CLT.forEach(function(r,i){var t=el("text",{x:4,y:top+i*rh+4,"class":"lab"},clus);var a=el("tspan",{"class":"c"},t);a.textContent=r[0]+" ";var b=el("tspan",{},t);b.textContent=SHORT[r[0]];
+    if(GOOD[r[0]]){var u=el("tspan",{fill:"var(--good)","font-weight":"700"},t);u.textContent=" ↑"}});
+  CL.forEach(function(c,j){
+    var g=el("g",{style:"color:var("+c.c+")"},clus);
+    var pts=CLT.map(function(r,i){return [cx(r[j+1]),top+i*rh]});
+    var pl=el("polyline",{points:pts.map(function(p){return p[0].toFixed(1)+","+p[1]}).join(" "),fill:"none",stroke:"currentColor","stroke-width":2.4,"stroke-linejoin":"round"},g);
+    if(!reduce){var len=pts.reduce(function(s,p,i){return i?s+Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1]):0},0);pl.style.strokeDasharray=len;pl.style.strokeDashoffset=len;pl.style.transition="stroke-dashoffset 1.4s ease "+(j*.25)+"s";c.pl=pl}
+    pts.forEach(function(p){el("circle",{cx:p[0],cy:p[1],r:4.2,fill:"currentColor",stroke:"var(--surface)","stroke-width":1.5},g)});
+    CLG.push(g);
+  });
+  var btns=document.getElementById("clBtns");btns.innerHTML="";
+  CL.forEach(function(c,j){var b=document.createElement("button");b.type="button";b.style.setProperty("--c","var("+c.c+")");b.textContent=c.id+" · n = "+c.n;b.setAttribute("aria-pressed","false");
+    b.addEventListener("click",function(){state.cl=state.cl===j?null:j;renderClus()});btns.appendChild(b)});
+  renderClus();
+}
+function drawClusLines(){CL.forEach(function(c){if(c.pl)c.pl.style.strokeDashoffset=0})}
+function renderClus(){
+  [].forEach.call(document.getElementById("clBtns").children,function(b,j){b.setAttribute("aria-pressed",state.cl===j?"true":"false")});
+  CLG.forEach(function(g,j){g.style.opacity=state.cl==null||state.cl===j?1:.12;g.style.transition="opacity .4s"});
+  var card=document.getElementById("clCard");
+  if(state.cl==null){card.style.borderLeftColor="var(--ink)";card.innerHTML='<h3>Toca un perfil para aislarlo</h3><p class="small" style="margin:0">C1 está cerca de la media en casi todo, con autoestima alta. C2 se dispara en el área interiorizada. C3 se dispara en agresión e ira, pero también en quejas somáticas.</p>';return}
+  var c=CL[state.cl],j=state.cl;
+  var probs=CLT.filter(function(r){return !GOOD[r[0]]}).slice().sort(function(a,b){return b[j+1]-a[j+1]}).slice(0,3);
+  card.style.borderLeftColor="var("+c.c+")";
+  card.innerHTML='<div class="ttl"><h3>'+c.id+": "+c.name+'</h3><span class="tag">'+c.v+" voleibol · "+c.f+" fútbol</span></div>"+
+   '<p class="small" style="margin:0 0 6px">Escalas más altas:</p><div class="kpis">'+probs.map(function(r){return '<div class="kpi"><div class="k">'+r[0]+'</div><div class="v">'+f1(r[j+1])+'</div><div class="s">'+SHORT[r[0]]+"</div></div>"}).join("")+"</div>"+
+   '<p class="small" style="margin:10px 0 0">Autoestima: <b>T '+f1(CLT[13][j+1])+"</b> · Integración social: <b>T "+f1(CLT[14][j+1])+"</b></p>";
+}
+
+/* ============ 5 · POTENCIA (t no central, integración numérica) ============ */
+function lgamma(z){var g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if(z<.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lgamma(1-z);z-=1;var x=c[0];for(var i=1;i<g+2;i++)x+=c[i]/(z+i);var t=z+g+.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(t)-t+Math.log(x)}
+function Phi(x){var t=1/(1+.2316419*Math.abs(x)),d=.3989422804014327*Math.exp(-x*x/2),p=d*t*(.31938153+t*(-.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return x>0?1-p:p}
+function expect(nu,fn){ // E[fn(V)], V ~ chi2(nu), regla de Simpson
+  var hi=nu+12*Math.sqrt(2*nu)+20,N=400,h=hi/N,s=0,lc=-(nu/2)*Math.log(2)-lgamma(nu/2);
+  for(var i=1;i<=N;i++){var v=i*h,w=(i===N)?1:(i%2?4:2),f=Math.exp(lc+(nu/2-1)*Math.log(v)-v/2);s+=w*f*fn(v)}
+  return s*h/3;
+}
+var TC={};
+function tcrit(nu){if(TC[nu])return TC[nu];var lo=1,hi=8;for(var i=0;i<40;i++){var c=(lo+hi)/2,p=expect(nu,function(v){return 1-Phi(c*Math.sqrt(v/nu))});if(p>.025)lo=c;else hi=c}return TC[nu]=(lo+hi)/2}
+function power(n,d){var nu=n-1,c=tcrit(nu),del=d*Math.sqrt(n);return expect(nu,function(v){var s=c*Math.sqrt(v/nu);return 1-Phi(s-del)+Phi(-s-del)})}
+function mde(n){var lo=.05,hi=3;for(var i=0;i<30;i++){var m=(lo+hi)/2;if(power(n,m)<.8)lo=m;else hi=m}return (lo+hi)/2}
+var pow=document.getElementById("pow"),PWX0=40,PWX1=346,PWY0=222,PWY1=14,NMIN=4,NMAX=60,powCurve,powGhost=[],MDE={};
+function pwx(n){return PWX0+(n-NMIN)/(NMAX-NMIN)*(PWX1-PWX0)} function pwy(p){return PWY0-p*(PWY0-PWY1)}
+function curve(d){var s="";for(var n=NMIN;n<=NMAX;n++)s+=(n===NMIN?"M":"L")+pwx(n).toFixed(1)+" "+pwy(power(n,d)).toFixed(1);return s}
+var KEYS=[{n:9,lab:"9",t:"Voleibol (STAIC)"},{n:10,lab:"10",t:"Voleibol (H1)"},{n:13,lab:"13",t:"Fútbol (H2)"}];
+function buildPow(){
+  pow.innerHTML="";
+  for(var p=0;p<=1.001;p+=.2){el("line",{x1:PWX0,x2:PWX1,y1:pwy(p),y2:pwy(p),"class":"ax-l"},pow);txt("text",{x:PWX0-6,y:pwy(p)+4,"text-anchor":"end","class":"ax-t"},pow,Math.round(p*100)+"%")}
+  [10,20,30,40,50,60].forEach(function(n){txt("text",{x:pwx(n),y:PWY0+16,"text-anchor":"middle","class":"ax-t"},pow,n)});
+  txt("text",{x:(PWX0+PWX1)/2,y:PWY0+33,"text-anchor":"middle","class":"ax-t","font-weight":"700"},pow,"Participantes con pretest y postest (n)");
+  el("line",{x1:PWX0,x2:PWX1,y1:pwy(.8),y2:pwy(.8),stroke:"var(--ink)","stroke-dasharray":"5 4","stroke-width":1.4},pow);
+  txt("text",{x:PWX1,y:pwy(.8)-5,"text-anchor":"end","class":"ax-t","font-weight":"700",fill:"var(--ink-2)"},pow,"80 % recomendado");
+  [.2,.8].forEach(function(d){var g=el("path",{d:curve(d),fill:"none",stroke:"var(--grid)","stroke-width":1.6},pow);powGhost.push(g)});
+  KEYS.forEach(function(k){el("line",{x1:pwx(k.n),x2:pwx(k.n),y1:PWY1,y2:PWY0,stroke:k.n===13?"var(--fut)":"var(--vol)","stroke-width":1.2,opacity:.6},pow)});
+  powCurve=el("path",{fill:"none",stroke:"var(--ink)","stroke-width":3,"stroke-linejoin":"round"},pow);
+  state.pdots=KEYS.map(function(k){return el("circle",{r:5.5,fill:k.n===13?"var(--fut)":"var(--vol)",stroke:"var(--surface)","stroke-width":2},pow)});
+  state.ghostLab=[txt("text",{"class":"ax-t"},pow,"d 0.2"),txt("text",{"class":"ax-t"},pow,"d 0.8")];
+  state.ghostLab[0].setAttribute("x",pwx(56));state.ghostLab[0].setAttribute("y",pwy(power(56,.2))-6);
+  state.ghostLab[1].setAttribute("x",pwx(24));state.ghostLab[1].setAttribute("y",pwy(power(24,.8))-6);
+  KEYS.forEach(function(k){MDE[k.n]=mde(k.n)});
+  powUpdate();
+  document.getElementById("mdeText").innerHTML="Para llegar al 80 % de potencia, con n = 10 el programa tendría que producir un cambio de <b>d ≈ "+MDE[10].toFixed(2)+"</b>, y con n = 13, de <b>d ≈ "+MDE[13].toFixed(2)+"</b>: efectos grandes. La ansiedad de voleibol parte 1.01 DE por encima de la media poblacional, así que hay espacio para un cambio así. El control de la ira de fútbol parte solo 0.39 DE por encima: el margen de descenso es estrecho. Con un efecto mediano (d = 0.50), harían falta unos 34 participantes por grupo.";
+}
+function powUpdate(){
+  var d=+document.getElementById("dSl").value;powCurve.setAttribute("d",curve(d));
+  KEYS.forEach(function(k,i){var p=power(k.n,d);state.pdots[i].setAttribute("cx",pwx(k.n));state.pdots[i].setAttribute("cy",pwy(p))});
+  var p10=power(10,d);
+  document.getElementById("powOut").innerHTML="Si el programa produce un efecto de <b>d = "+d.toFixed(2)+"</b>, con n = 10 la prueba lo detectaría <b>"+Math.round(p10*100)+" de cada 100 veces</b>.";
+  document.getElementById("pwTable").innerHTML="<tr><th>Grupo</th><th>n</th><th>Potencia</th><th>d mín. 80 %</th></tr>"+KEYS.map(function(k){var p=power(k.n,d);return "<tr><td>"+k.t+"</td><td>"+k.n+"</td><td>"+Math.round(p*100)+'% <span class="bar80"><i style="width:'+Math.round(p*100)+'%"></i></span></td><td>'+MDE[k.n].toFixed(2)+"</td></tr>"}).join("");
+}
+document.getElementById("dSl").addEventListener("input",powUpdate);
+
+/* ============ 6 · NORMALIDAD ============ */
+var norm=document.getElementById("norm"),NC=[214,290],state_norm={k:"ANS",t:"v"};
+function buildNorm(){
+  var top=36,rh=21,y=top,g0=null,H;
+  var rows=[];S.forEach(function(s){if(s.g!==g0){g0=s.g;rows.push({h:s.g,y:y});y+=19}rows.push({s:s,y:y});y+=rh});
+  H=y+6;norm.setAttribute("viewBox","0 0 360 "+H);norm.innerHTML="";
+  txt("text",{x:NC[0],y:14,"text-anchor":"middle","font-size":"12","font-weight":"700",fill:"var(--vol)"},norm,"Voleibol");
+  txt("text",{x:NC[1],y:14,"text-anchor":"middle","font-size":"12","font-weight":"700",fill:"var(--fut)"},norm,"Fútbol");
+  txt("text",{x:NC[0],y:28,"text-anchor":"middle","class":"ax-t"},norm,"W (p)");txt("text",{x:NC[1],y:28,"text-anchor":"middle","class":"ax-t"},norm,"W (p)");
+  var nv=0,nf=0;
+  rows.forEach(function(r){
+    if(r.h){txt("text",{x:4,y:r.y+8,"class":"grp"},norm,r.h);return}
+    var s=r.s,t=el("text",{x:4,y:r.y+5,"class":"lab"},norm);var a=el("tspan",{"class":"c"},t);a.textContent=s.k+" ";var b=el("tspan",{},t);b.textContent=SHORT[s.k];
+    ["v","f"].forEach(function(tm,i){var d=s[tm],bad=d.pW<.05;if(bad){if(tm==="v")nv++;else nf++}
+      var hyp=(s.k==="ANS"&&tm==="v")||(s.k==="IRA"&&tm==="f");
+      var g=el("g",{style:"cursor:pointer"},norm);
+      el("rect",{x:NC[i]-36,y:r.y-8,width:72,height:17,rx:5,fill:bad?"var(--bad)":"var(--surface-2)",stroke:hyp?"var(--ink)":"none","stroke-width":hyp?2:0},g);
+      txt("text",{x:NC[i],y:r.y+4.5,"text-anchor":"middle","font-size":"11.5","font-weight":"700",fill:bad?"#fff":"var(--ink-2)"},g,f2(d.W).replace(/^0/,"")+" ("+fq(d.pW)+")");
+      g.addEventListener("click",function(){state_norm={k:s.k,t:tm};renderNorm()});
+    });
+  });
+  state.normCounts=[nv,nf];renderNorm();
+}
+function renderNorm(){
+  var s=BYK[state_norm.k],t=state_norm.t,d=s[t],c=state.normCounts;
+  document.getElementById("normCard").innerHTML='<div class="ttl"><h3>'+s.name+'</h3><span class="tag">'+TEAM[t].name+"</span></div>"+
+   '<div class="kpis"><div class="kpi"><div class="k">Shapiro-Wilk</div><div class="v">'+f2(d.W).replace(/^0/,"")+'</div><div class="s">p = '+fq(d.pW)+'</div></div><div class="kpi"><div class="k">Asimetría</div><div class="v">'+sgn(d.sk)+'</div></div><div class="kpi"><div class="k">Curtosis</div><div class="v">'+sgn(d.ku)+"</div></div></div>"+
+   '<p class="small" style="margin:10px 0 0">'+(d.pW<.05?"Se aparta de la normalidad: conviene una prueba no paramétrica.":"Compatible con una distribución normal.")+' <span class="muted">En total: '+c[0]+" de 29 escalas no normales en voleibol y "+c[1]+" de 29 en fútbol.</span></p>";
+}
+
+/* ============ EQUIPO ============ */
+var segBtns=[].slice.call(document.querySelectorAll(".seg button"));
+function setTeam(t,anim){
+  state.team=t;document.body.classList.toggle("fut",t==="f");
+  segBtns.forEach(function(b){b.setAttribute("aria-pressed",b.dataset.team===t?"true":"false")});
+  renderTiles();renderDetail();renderWaffle();
+  if(anim){forestAnimate();prevAnimate()}else{forestDraw(1,null);prevDraw(1,null)}
+}
+segBtns.forEach(function(b){b.addEventListener("click",function(){if(b.dataset.team!==state.team)setTeam(b.dataset.team,true)})});
+
+/* ============ NAVEGACIÓN ============ */
+var steps=[].slice.call(document.querySelectorAll(".step")),stepper=document.getElementById("stepper");
+steps.forEach(function(s,i){var b=document.createElement("button");b.type="button";b.setAttribute("aria-label",(i+1)+". "+s.dataset.title);
+  b.innerHTML='<span class="bar"></span><span class="lbl">'+s.dataset.title+"</span>";b.addEventListener("click",function(){go(i)});stepper.appendChild(b)});
+var prevB=document.getElementById("prev"),nextB=document.getElementById("next"),count=document.getElementById("count");
+function go(i,fromHash){
+  if(i<0||i>=steps.length)return;var back=i<state.step;state.step=i;
+  steps.forEach(function(s,j){s.classList.toggle("on",j===i);s.classList.toggle("back",j===i&&back)});
+  [].forEach.call(stepper.children,function(b,j){b.classList.toggle("on",j===i);b.classList.toggle("done",j<i)});
+  document.body.classList.toggle("show-team",!!steps[i].dataset.team);
+  prevB.disabled=i===0;nextB.textContent=i===steps.length-1?"Inicio ↺":"Siguiente →";count.textContent=(i+1)+" / "+steps.length;
+  if(i===0)countUp();
+  if(i===3&&state.regLine)requestAnimationFrame(function(){requestAnimationFrame(function(){state.regLine.style.strokeDashoffset=0})});
+  if(i===4)requestAnimationFrame(function(){requestAnimationFrame(drawClusLines)});
+  if(!fromHash&&history.replaceState)history.replaceState(null,"","#"+(i+1));
+  window.scrollTo({top:0,behavior:reduce?"auto":"smooth"});
+}
+prevB.addEventListener("click",function(){go(state.step-1)});
+nextB.addEventListener("click",function(){go(state.step===steps.length-1?0:state.step+1)});
+document.addEventListener("keydown",function(e){if(e.target.tagName==="INPUT")return;if(e.key==="ArrowRight")go(state.step+1);else if(e.key==="ArrowLeft")go(state.step-1)});
+var sx=0,sy=0,st0=0,tr=false,mainEl=document.getElementById("main");
+mainEl.addEventListener("touchstart",function(e){tr=e.touches.length===1&&e.target.tagName!=="INPUT";if(!tr)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;st0=Date.now()},{passive:true});
+mainEl.addEventListener("touchend",function(e){if(!tr)return;tr=false;var t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6&&Date.now()-st0<800)go(state.step+(dx<0?1:-1))},{passive:true});
+
+/* ============ TEMA ============ */
+var root=document.documentElement;
+try{var sv=localStorage.getItem("eifd-theme2");if(sv)root.setAttribute("data-theme",sv)}catch(e){}
+document.getElementById("themeBtn").addEventListener("click",function(){var cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),nx=cur==="dark"?"light":"dark";root.setAttribute("data-theme",nx);try{localStorage.setItem("eifd-theme2",nx)}catch(e){}renderTiles()});
+matchMedia("(prefers-color-scheme: dark)").addEventListener&&matchMedia("(prefers-color-scheme: dark)").addEventListener("change",renderTiles);
+
+/* ============ INICIO ============ */
+buildTiles();buildForest();buildPrev();buildNet();buildReg();buildClus();buildPow();buildNorm();
+setTeam("v",false);
+var m=/#(\d)/.exec(location.hash);go(m?Math.min(7,Math.max(1,+m[1]))-1:0,true);if(state.step===0)countUp();
+window.__power=power;
+})();
+</script>
+</body>
+</html>
